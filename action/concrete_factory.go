@@ -7,6 +7,7 @@ import (
 	bmsclient "github.com/cloudfoundry-community/bosh-softlayer-tools/clients"
 	slclient "github.com/maximilien/softlayer-go/client"
 
+	bsl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 	bslcdisk "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/disk"
 	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
 	bslcvm "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/vm"
@@ -28,28 +29,27 @@ func NewConcreteFactory(options ConcreteFactoryOptions, logger boshlog.Logger) c
 	baremetalClient := bmsclient.NewBmpClient(options.Baremetal.Username, options.Baremetal.Password, options.Baremetal.EndPoint, nil, "")
 	poolClient := apiclient.New(httptransport.New(fmt.Sprintf("%s:%d", options.Pool.Host, options.Pool.Port), "v2", nil), strfmt.Default).VM
 
+	repClientFactory := bsl.NewClientFactory(softLayerClient, baremetalClient, poolClient)
+	client := repClientFactory.CreateClient()
+
 	stemcellFinder := bslcstem.NewSoftLayerStemcellFinder(softLayerClient, logger)
 
 	agentEnvServiceFactory := NewSoftLayerAgentEnvServiceFactory(options.AgentEnvService, options.Registry, logger)
 
 	vmFinder := bslcvm.NewSoftLayerFinder(
-		softLayerClient,
-		baremetalClient,
+		client,
 		agentEnvServiceFactory,
 		logger,
 	)
 
 	vmCreatorProvider := NewCreatorProvider(
-		softLayerClient,
-		baremetalClient,
-		poolClient,
+		client,
 		options,
 		logger,
 	)
 
 	vmDeleterProvider := NewDeleterProvider(
-		softLayerClient,
-		poolClient,
+		client,
 		logger,
 	)
 

@@ -1,13 +1,11 @@
 package action
 
 import (
-	bmscl "github.com/cloudfoundry-community/bosh-softlayer-tools/clients"
-	sl "github.com/maximilien/softlayer-go/softlayer"
+	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 	slhw "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/hardware"
 	slpool "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool"
-	operations "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/client/vm"
 	slvm "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/vm"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 )
@@ -30,39 +28,34 @@ type deleterProvider struct {
 	deleters map[string]VMDeleter
 }
 
-func NewCreatorProvider(softLayerClient sl.Client, baremetalClient bmscl.BmpClient, softLayerPoolClient operations.SoftLayerPoolClient, options ConcreteFactoryOptions, logger boshlog.Logger) CreatorProvider {
+func NewCreatorProvider(client sl.Client, options ConcreteFactoryOptions, logger boshlog.Logger) CreatorProvider {
 	agentEnvServiceFactory := NewSoftLayerAgentEnvServiceFactory(options.AgentEnvService, options.Registry, logger)
 
 	vmFinder := slvm.NewSoftLayerFinder(
-		softLayerClient,
-		baremetalClient,
+		client,
 		agentEnvServiceFactory,
 		logger,
 	)
 
 	virtualGuestCreator := slvm.NewSoftLayerCreator(
-		vmFinder,
-		softLayerClient,
+		client,
 		options.Agent,
-		logger,
 		options.Softlayer.FeatureOptions,
+		logger,
 	)
 
 	baremetalCreator := slhw.NewBaremetalCreator(
-		vmFinder,
-		softLayerClient,
-		baremetalClient,
+		client,
 		options.Agent,
 		logger,
 	)
 
 	poolCreator := slpool.NewSoftLayerPoolCreator(
 		vmFinder,
-		softLayerPoolClient,
-		softLayerClient,
+		client,
 		options.Agent,
-		logger,
 		options.Softlayer.FeatureOptions,
+		logger,
 	)
 
 	return creatorProvider{
@@ -78,15 +71,14 @@ func (p creatorProvider) Get(name string) VMCreator {
 	return p.creators[name]
 }
 
-func NewDeleterProvider(softLayerClient sl.Client, softLayerPoolClient operations.SoftLayerPoolClient, logger boshlog.Logger) DeleterProvider {
+func NewDeleterProvider(client sl.Client, logger boshlog.Logger) DeleterProvider {
 	virtualGuestDeleter := slvm.NewSoftLayerVMDeleter(
-		softLayerClient,
+		client,
 		logger,
 	)
 
 	poolDeleter := slpool.NewSoftLayerPoolDeleter(
-		softLayerPoolClient,
-		softLayerClient,
+		client,
 		logger,
 	)
 

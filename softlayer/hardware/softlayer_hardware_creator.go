@@ -7,7 +7,6 @@ import (
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
-	bmslc "github.com/cloudfoundry-community/bosh-softlayer-tools/clients"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
@@ -15,23 +14,20 @@ import (
 )
 
 type baremetalCreator struct {
-	softLayerClient        sl.Client
-	bmsClient              bmslc.BmpClient
+	client                 sl.Client
 	agentEnvServiceFactory AgentEnvServiceFactory
 
-	agentOptions AgentOptions
-	logger       boshlog.Logger
-	vmFinder     VMFinder
+	agentOptions           AgentOptions
+	logger                 boshlog.Logger
+	vmFinder               VMFinder
 }
 
-func NewBaremetalCreator(vmFinder VMFinder, softLayerClient sl.Client, bmsClient bmslc.BmpClient, agentOptions AgentOptions, logger boshlog.Logger) VMCreator {
+func NewBaremetalCreator(client sl.Client, agentOptions AgentOptions, logger boshlog.Logger) VMCreator {
 	slh.TIMEOUT = 15 * time.Minute
 	slh.POLLING_INTERVAL = 5 * time.Second
 
 	return &baremetalCreator{
-		vmFinder:        vmFinder,
-		softLayerClient: softLayerClient,
-		bmsClient:       bmsClient,
+		client: 	 client,
 		agentOptions:    agentOptions,
 		logger:          logger,
 	}
@@ -103,7 +99,7 @@ func (c *baremetalCreator) createByOSReload(agentID string, stemcell bslcstem.St
 		return nil, bosherr.Error("No stemcell provided to do os_reload.")
 	}
 
-	hardwareService, err := c.softLayerClient.GetSoftLayer_Hardware_Service()
+	hardwareService, err := c.client.GetSoftLayer_Hardware_Service()
 	if err != nil {
 		return nil, bosherr.WrapError(err, "Creating HardwareService from SoftLayer client")
 	}

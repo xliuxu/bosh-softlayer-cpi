@@ -27,27 +27,24 @@ import (
 const SOFTLAYER_POOL_CREATOR_LOG_TAG = "SoftLayerPoolCreator"
 
 type softLayerPoolCreator struct {
-	softLayerClient       sl.Client
-	softLayerVmPoolClient operations.SoftLayerPoolClient
-
+	client                 sl.Client
 	agentEnvServiceFactory AgentEnvServiceFactory
 
-	agentOptions AgentOptions
+	agentOptions           AgentOptions
 
-	logger boshlog.Logger
+	logger                 boshlog.Logger
 
-	vmFinder VMFinder
+	vmFinder               VMFinder
 
-	featureOptions FeatureOptions
+	featureOptions         FeatureOptions
 }
 
-func NewSoftLayerPoolCreator(vmFinder VMFinder, softLayerVmPoolClient operations.SoftLayerPoolClient, softLayerClient sl.Client, agentOptions AgentOptions, logger boshlog.Logger, featureOptions FeatureOptions) VMCreator {
+func NewSoftLayerPoolCreator(vmFinder VMFinder, client sl.Client, agentOptions AgentOptions, featureOptions FeatureOptions, logger boshlog.Logger) VMCreator {
 	slhelper.TIMEOUT = 120 * time.Minute
 	slhelper.POLLING_INTERVAL = 5 * time.Second
 
 	return &softLayerPoolCreator{
-		softLayerVmPoolClient: softLayerVmPoolClient,
-		softLayerClient:       softLayerClient,
+		client:       client,
 		agentOptions:          agentOptions,
 		logger:                logger,
 		vmFinder:              vmFinder,
@@ -145,7 +142,7 @@ func (c *softLayerPoolCreator) createBySoftlayer(agentID string, stemcell bslcst
 		return nil, bosherr.WrapError(err, "Creating VirtualGuest template")
 	}
 
-	virtualGuestService, err := c.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := c.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return nil, bosherr.WrapError(err, "Creating VirtualGuestService from SoftLayer client")
 	}
@@ -156,12 +153,12 @@ func (c *softLayerPoolCreator) createBySoftlayer(agentID string, stemcell bslcst
 	}
 
 	if cloudProps.EphemeralDiskSize == 0 {
-		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.softLayerClient, virtualGuest.Id, "Service Setup")
+		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.client, virtualGuest.Id, "Service Setup")
 		if err != nil {
 			return nil, bosherr.WrapErrorf(err, "Waiting for VirtualGuest `%d` has Service Setup transaction complete", virtualGuest.Id)
 		}
 	} else {
-		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.softLayerClient, virtualGuest.Id, cloudProps.EphemeralDiskSize, c.logger)
+		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.client, virtualGuest.Id, cloudProps.EphemeralDiskSize, c.logger)
 		if err != nil {
 			return nil, bosherr.WrapError(err, fmt.Sprintf("Attaching ephemeral disk to VirtualGuest `%d`", virtualGuest.Id))
 		}
@@ -213,7 +210,7 @@ func (c *softLayerPoolCreator) createBySoftlayer(agentID string, stemcell bslcst
 }
 
 func (c *softLayerPoolCreator) createByOSReload(agentID string, stemcell bslcstem.Stemcell, cloudProps VMCloudProperties, networks Networks, env Environment) (VM, error) {
-	virtualGuestService, err := c.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := c.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return nil, bosherr.WrapError(err, "Creating VirtualGuestService from SoftLayer client")
 	}
@@ -252,12 +249,12 @@ func (c *softLayerPoolCreator) createByOSReload(agentID string, stemcell bslcste
 	}
 
 	if cloudProps.EphemeralDiskSize == 0 {
-		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.softLayerClient, vm.ID(), "Service Setup")
+		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.client, vm.ID(), "Service Setup")
 		if err != nil {
 			return nil, bosherr.WrapErrorf(err, "Waiting for VirtualGuest `%d` has Service Setup transaction complete", vm.ID())
 		}
 	} else {
-		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.softLayerClient, vm.ID(), cloudProps.EphemeralDiskSize, c.logger)
+		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.client, vm.ID(), cloudProps.EphemeralDiskSize, c.logger)
 		if err != nil {
 			return nil, bosherr.WrapError(err, fmt.Sprintf("Attaching ephemeral disk to VirtualGuest `%d`", vm.ID()))
 		}
@@ -323,12 +320,12 @@ func (c *softLayerPoolCreator) oSReloadVMInPool(cid int, agentID string, stemcel
 	}
 
 	if cloudProps.EphemeralDiskSize == 0 {
-		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.softLayerClient, vm.ID(), "Service Setup")
+		err = slhelper.WaitForVirtualGuestLastCompleteTransaction(c.client, vm.ID(), "Service Setup")
 		if err != nil {
 			return nil, bosherr.WrapErrorf(err, "Waiting for VirtualGuest `%d` has Service Setup transaction complete", vm.ID())
 		}
 	} else {
-		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.softLayerClient, vm.ID(), cloudProps.EphemeralDiskSize, c.logger)
+		err = slhelper.AttachEphemeralDiskToVirtualGuest(c.client, vm.ID(), cloudProps.EphemeralDiskSize, c.logger)
 		if err != nil {
 			return nil, bosherr.WrapError(err, fmt.Sprintf("Attaching ephemeral disk to VirtualGuest `%d`", vm.ID()))
 		}

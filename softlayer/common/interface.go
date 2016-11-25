@@ -1,10 +1,12 @@
 package common
 
 import (
+	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 	sldatatypes "github.com/maximilien/softlayer-go/data_types"
 
 	bslcdisk "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/disk"
 	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 )
 
 type Environment map[string]interface{}
@@ -136,4 +138,15 @@ type VMDeleter interface {
 //go:generate counterfeiter -o fakes/fake_vm_finder.go . VMFinder
 type VMFinder interface {
 	Find(int) (VM, bool, error)
+}
+
+type SoftLayerVirtualGuestCreator struct {
+	SoftLayerClient        sl.Client
+	AgentEnvServiceFactory AgentEnvServiceFactory
+
+	AgentOptions AgentOptions
+	Logger       boshlog.Logger
+	VmFinder     VMFinder
+
+	FeatureOptions FeatureOptions
 }

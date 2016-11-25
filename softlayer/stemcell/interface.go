@@ -9,6 +9,5 @@ type StemcellFinder interface {
 type Stemcell interface {
 	ID() int
 	Uuid() string
-
 	Delete() error
 }

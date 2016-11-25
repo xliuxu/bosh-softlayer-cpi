@@ -16,7 +16,7 @@ import (
 
 	bmscl "github.com/cloudfoundry-community/bosh-softlayer-tools/clients"
 	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
-	sl "github.com/maximilien/softlayer-go/softlayer"
+	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 
 	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
@@ -28,32 +28,23 @@ import (
 )
 
 type softLayerHardware struct {
-	id int
-
-	hardware datatypes.SoftLayer_Hardware
-
-	softLayerClient sl.Client
-	baremetalClient bmscl.BmpClient
+	id              int
+	hardware        datatypes.SoftLayer_Hardware
+	client          sl.Client
 	sshClient       util.SshClient
-
 	agentEnvService AgentEnvService
-
-	logger boshlog.Logger
+	logger          boshlog.Logger
 }
 
-func NewSoftLayerHardware(hardware datatypes.SoftLayer_Hardware, softLayerClient sl.Client, baremetalClient bmscl.BmpClient, sshClient util.SshClient, logger boshlog.Logger) VM {
+func NewSoftLayerHardware(hardware datatypes.SoftLayer_Hardware, client sl.Client, sshClient util.SshClient, logger boshlog.Logger) VM {
 	slh.TIMEOUT = 60 * time.Minute
 	slh.POLLING_INTERVAL = 10 * time.Second
 
 	return &softLayerHardware{
 		id: hardware.Id,
-
 		hardware: hardware,
-
-		softLayerClient: softLayerClient,
-		baremetalClient: baremetalClient,
+		client: client,
 		sshClient:       sshClient,
-
 		logger: logger,
 	}
 }
@@ -169,7 +160,7 @@ func (vm *softLayerHardware) AttachDisk(disk bslcdisk.Disk) error {
 		return bosherr.WrapError(err, fmt.Sprintf("Failed to fetch disk `%d`", disk.ID()))
 	}
 
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -243,7 +234,7 @@ func (vm *softLayerHardware) DetachDisk(disk bslcdisk.Disk) error {
 		return bosherr.WrapErrorf(err, "Failed to detach volume with id %d from hardware with id: %d.", volume.Id, vm.ID())
 	}
 
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -435,7 +426,7 @@ func (vm *softLayerHardware) getIscsiDeviceNamesBasedOnShellScript(hasMultiPath 
 }
 
 func (vm *softLayerHardware) fetchIscsiVolume(volumeId int) (datatypes.SoftLayer_Network_Storage, error) {
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return datatypes.SoftLayer_Network_Storage{}, bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -449,7 +440,7 @@ func (vm *softLayerHardware) fetchIscsiVolume(volumeId int) (datatypes.SoftLayer
 }
 
 func (vm *softLayerHardware) getAllowedHostCredential() (AllowedHostCredential, error) {
-	hardwareService, err := vm.softLayerClient.GetSoftLayer_Hardware_Service()
+	hardwareService, err := vm.client.GetSoftLayer_Hardware_Service()
 	if err != nil {
 		return AllowedHostCredential{}, bosherr.WrapError(err, "Cannot get softlayer hardware service.")
 	}
@@ -463,7 +454,7 @@ func (vm *softLayerHardware) getAllowedHostCredential() (AllowedHostCredential, 
 		return AllowedHostCredential{}, bosherr.Errorf("Cannot get allowed host with instance id: %d", vm.ID())
 	}
 
-	allowedHostService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Allowed_Host_Service()
+	allowedHostService, err := vm.client.GetSoftLayer_Network_Storage_Allowed_Host_Service()
 	if err != nil {
 		return AllowedHostCredential{}, bosherr.WrapError(err, "Cannot get network storage allowed host service.")
 	}

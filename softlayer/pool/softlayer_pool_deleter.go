@@ -9,7 +9,7 @@ import (
 	slhelper "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 
 	operations "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/client/vm"
-	sl "github.com/maximilien/softlayer-go/softlayer"
+	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 
@@ -17,15 +17,13 @@ import (
 )
 
 type softLayerPoolDeleter struct {
-	softLayerClient       sl.Client
-	softLayerVmPoolClient operations.SoftLayerPoolClient
+	softLayerClient       *sl.Client
 	logger                boshlog.Logger
 }
 
-func NewSoftLayerPoolDeleter(softLayerVmPoolClient operations.SoftLayerPoolClient, softLayerClient sl.Client, logger boshlog.Logger) VMDeleter {
+func NewSoftLayerPoolDeleter(client *sl.Client, logger boshlog.Logger) VMDeleter {
 	return &softLayerPoolDeleter{
-		softLayerClient:       softLayerClient,
-		softLayerVmPoolClient: softLayerVmPoolClient,
+		softLayerClient:       client,
 		logger:                logger,
 	}
 }

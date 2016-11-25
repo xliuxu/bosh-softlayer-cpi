@@ -30,7 +30,7 @@ func AttachEphemeralDiskToVirtualGuest(softLayerClient sl.Client, virtualGuestId
 		return bosherr.WrapErrorf(err, "Waiting for VirtualGuest `%d` has Service Setup transaction complete", virtualGuestId)
 	}
 
-	err = WaitForVirtualGuestToHaveNoRunningTransactions(softLayerClient, virtualGuestId)
+	err = WaitForVirtualGuestToHaveNoRunningTransaction(softLayerClient, virtualGuestId, logger)
 	if err != nil {
 		return bosherr.WrapErrorf(err, "Waiting for VirtualGuest `%d` to have no pending transactions", virtualGuestId)
 	}
@@ -73,30 +73,6 @@ func AttachEphemeralDiskToVirtualGuest(softLayerClient sl.Client, virtualGuestId
 	}
 
 	return nil
-}
-
-func WaitForVirtualGuestToHaveNoRunningTransactions(softLayerClient sl.Client, virtualGuestId int) error {
-	virtualGuestService, err := softLayerClient.GetSoftLayer_Virtual_Guest_Service()
-	if err != nil {
-		return bosherr.WrapError(err, "Creating VirtualGuestService from SoftLayer client")
-	}
-
-	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
-		activeTransactions, err := virtualGuestService.GetActiveTransactions(virtualGuestId)
-		if err != nil {
-			return bosherr.WrapError(err, "Getting active transaction from SoftLayer client")
-		}
-
-		if len(activeTransactions) == 0 {
-			return nil
-		}
-
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
-	}
-
-	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have no active transactions", virtualGuestId)
 }
 
 func WaitForVirtualGuestToHaveRunningTransaction(softLayerClient sl.Client, virtualGuestId int, logger boshlog.Logger) error {

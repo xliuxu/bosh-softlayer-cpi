@@ -16,7 +16,7 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
 	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
-	sl "github.com/maximilien/softlayer-go/softlayer"
+	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 	bslcdisk "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/disk"
@@ -29,30 +29,23 @@ import (
 )
 
 type softLayerVirtualGuest struct {
-	id int
-
-	virtualGuest datatypes.SoftLayer_Virtual_Guest
-
-	softLayerClient sl.Client
+	id              int
+	virtualGuest    datatypes.SoftLayer_Virtual_Guest
+	client          sl.Client
 	sshClient       util.SshClient
-
 	agentEnvService AgentEnvService
-
-	logger boshlog.Logger
+	logger          boshlog.Logger
 }
 
-func NewSoftLayerVirtualGuest(virtualGuest datatypes.SoftLayer_Virtual_Guest, softLayerClient sl.Client, sshClient util.SshClient, logger boshlog.Logger) VM {
+func NewSoftLayerVirtualGuest(virtualGuest datatypes.SoftLayer_Virtual_Guest, client sl.Client, sshClient util.SshClient, logger boshlog.Logger) VM {
 	slh.TIMEOUT = 60 * time.Minute
 	slh.POLLING_INTERVAL = 10 * time.Second
 
 	return &softLayerVirtualGuest{
 		id: virtualGuest.Id,
-
 		virtualGuest: virtualGuest,
-
-		softLayerClient: softLayerClient,
+		client: client,
 		sshClient:       sshClient,
-
 		logger: logger,
 	}
 }
@@ -107,7 +100,7 @@ func (vm *softLayerVirtualGuest) SetAgentEnvService(agentEnvService AgentEnvServ
 }
 
 func (vm *softLayerVirtualGuest) Reboot() error {
-	virtualGuestService, err := vm.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := vm.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Creating SoftLayer VirtualGuestService from client")
 	}
@@ -129,12 +122,12 @@ func (vm *softLayerVirtualGuest) ReloadOS(stemcell bslcstem.Stemcell) error {
 		ImageTemplateId: strconv.Itoa(stemcell.ID()),
 	}
 
-	virtualGuestService, err := vm.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := vm.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Creating VirtualGuestService from SoftLayer client")
 	}
 
-	err = slh.WaitForVirtualGuestToHaveNoRunningTransactions(vm.softLayerClient, vm.ID())
+	err = slh.WaitForVirtualGuestToHaveNoRunningTransaction(vm.client, vm.ID(), vm.logger)
 	if err != nil {
 		return bosherr.WrapError(err, fmt.Sprintf("Waiting for VirtualGuest %d to have no pending transactions before os reload", vm.ID()))
 	}
@@ -145,7 +138,7 @@ func (vm *softLayerVirtualGuest) ReloadOS(stemcell bslcstem.Stemcell) error {
 		return bosherr.WrapError(err, "Failed to reload OS on the specified VirtualGuest from SoftLayer client")
 	}
 
-	err = vm.postCheckActiveTransactionsForOSReload(vm.softLayerClient)
+	err = vm.postCheckActiveTransactionsForOSReload(vm.client)
 	if err != nil {
 		return err
 	}
@@ -163,7 +156,7 @@ func (vm *softLayerVirtualGuest) SetMetadata(vmMetadata VMMetadata) error {
 		return err
 	}
 
-	virtualGuestService, err := vm.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := vm.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Creating SoftLayer VirtualGuestService from client")
 	}
@@ -209,7 +202,7 @@ func (s *sshClientWrapper) Output(command string) ([]byte, error) {
 
 func (vm *softLayerVirtualGuest) ConfigureNetworks2(networks Networks) error {
 	ubuntu := Ubuntu{
-		SoftLayerClient: vm.softLayerClient.GetHttpClient(),
+		SoftLayerClient: vm.client.GetHttpClient(),
 		SSHClient: &sshClientWrapper{
 			client:   vm.sshClient,
 			ip:       vm.GetPrimaryBackendIP(),
@@ -233,7 +226,7 @@ func (vm *softLayerVirtualGuest) AttachDisk(disk bslcdisk.Disk) error {
 		return bosherr.WrapError(err, fmt.Sprintf("Failed to fetch disk `%d`", disk.ID()))
 	}
 
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -307,7 +300,7 @@ func (vm *softLayerVirtualGuest) DetachDisk(disk bslcdisk.Disk) error {
 		return bosherr.WrapErrorf(err, "Failed to detach volume with id %d from virtual guest with id: %d.", volume.Id, vm.ID())
 	}
 
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -525,7 +518,7 @@ func (vm *softLayerVirtualGuest) getIscsiDeviceNamesBasedOnShellScript(hasMultiP
 }
 
 func (vm *softLayerVirtualGuest) fetchIscsiVolume(volumeId int) (datatypes.SoftLayer_Network_Storage, error) {
-	networkStorageService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Service()
+	networkStorageService, err := vm.client.GetSoftLayer_Network_Storage_Service()
 	if err != nil {
 		return datatypes.SoftLayer_Network_Storage{}, bosherr.WrapError(err, "Cannot get network storage service.")
 	}
@@ -542,7 +535,7 @@ func (vm *softLayerVirtualGuest) getAllowedHostCredential() (AllowedHostCredenti
 	var allowedHost datatypes.SoftLayer_Network_Storage_Allowed_Host
 	var err error
 
-	virtualGuestService, err := vm.softLayerClient.GetSoftLayer_Virtual_Guest_Service()
+	virtualGuestService, err := vm.client.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return AllowedHostCredential{}, bosherr.WrapError(err, "Cannot get softlayer virtual guest service.")
 	}
@@ -556,7 +549,7 @@ func (vm *softLayerVirtualGuest) getAllowedHostCredential() (AllowedHostCredenti
 		return AllowedHostCredential{}, bosherr.Errorf("Cannot get allowed host with instance id: %d", vm.ID())
 	}
 
-	allowedHostService, err := vm.softLayerClient.GetSoftLayer_Network_Storage_Allowed_Host_Service()
+	allowedHostService, err := vm.client.GetSoftLayer_Network_Storage_Allowed_Host_Service()
 	if err != nil {
 		return AllowedHostCredential{}, bosherr.WrapError(err, "Cannot get network storage allowed host service.")
 	}
@@ -745,7 +738,7 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForOSReload(softLaye
 		return errors.New(fmt.Sprintf("Waiting for OS Reload transaction to start TIME OUT!"))
 	}
 
-	err = slh.WaitForVirtualGuest(vm.softLayerClient, vm.ID(), "RUNNING")
+	err = slh.WaitForVirtualGuest(vm.client, vm.ID(), "RUNNING")
 	if err != nil {
 		if !strings.Contains(err.Error(), "HTTP error code") {
 			return bosherr.WrapError(err, fmt.Sprintf("PowerOn failed with VirtualGuest id %d", vm.ID()))
