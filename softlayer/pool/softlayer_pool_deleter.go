@@ -9,7 +9,7 @@ import (
 	slhelper "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 
 	operations "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/client/vm"
-	sl "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
+	slc "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 
@@ -17,23 +17,23 @@ import (
 )
 
 type softLayerPoolDeleter struct {
-	softLayerClient       *sl.Client
-	logger                boshlog.Logger
+	client slc.Client
+	logger boshlog.Logger
 }
 
-func NewSoftLayerPoolDeleter(client *sl.Client, logger boshlog.Logger) VMDeleter {
+func NewSoftLayerPoolDeleter(client slc.Client, logger boshlog.Logger) VMDeleter {
 	return &softLayerPoolDeleter{
-		softLayerClient:       client,
+		client:       client,
 		logger:                logger,
 	}
 }
 
 func (c *softLayerPoolDeleter) Delete(cid int) error {
-	_, err := c.softLayerVmPoolClient.GetVMByCid(operations.NewGetVMByCidParams().WithCid(int32(cid)))
+	_, err := c.client.GetVMByCid(operations.NewGetVMByCidParams().WithCid(int32(cid)))
 	if err != nil {
 		_, ok := err.(*operations.GetVMByCidNotFound)
 		if ok {
-			virtualGuest, err := slhelper.GetObjectDetailsOnVirtualGuest(c.softLayerClient, cid)
+			virtualGuest, err := slhelper.GetObjectDetailsOnVirtualGuest(c.client, cid)
 			if err != nil {
 				return bosherr.WrapError(err, fmt.Sprintf("Getting virtual guest %d details from SoftLayer", cid))
 			}
@@ -48,7 +48,7 @@ func (c *softLayerPoolDeleter) Delete(cid int) error {
 				PublicVlan:  int32(virtualGuest.PrimaryNetworkComponent.NetworkVlan.Id),
 				State:       models.StateFree,
 			}
-			_, err = c.softLayerVmPoolClient.AddVM(operations.NewAddVMParams().WithBody(slPoolVm))
+			_, err = c.client.AddVM(operations.NewAddVMParams().WithBody(slPoolVm))
 			if err != nil {
 				return bosherr.WrapError(err, fmt.Sprintf("Adding vm %d to pool", cid))
 			}
@@ -60,7 +60,7 @@ func (c *softLayerPoolDeleter) Delete(cid int) error {
 	free := models.VMState{
 		State: models.StateFree,
 	}
-	_, err = c.softLayerVmPoolClient.UpdateVMWithState(operations.NewUpdateVMWithStateParams().WithBody(&free).WithCid(int32(cid)))
+	_, err = c.client.UpdateVMWithState(operations.NewUpdateVMWithStateParams().WithBody(&free).WithCid(int32(cid)))
 	if err != nil {
 		return bosherr.WrapErrorf(err, "Updating state of vm %d in pool to free", cid)
 	}

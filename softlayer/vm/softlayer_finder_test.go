@@ -31,7 +31,7 @@ var _ = Describe("SoftLayerFinder", func() {
 		agentEnvServiceFactory = &fakescommon.FakeAgentEnvServiceFactory{}
 		logger = boshlog.NewLogger(boshlog.LevelNone)
 
-		finder = NewSoftLayerFinder(
+		finder = NewVMFinder(
 			softLayerClient,
 			baremetalClient,
 			agentEnvServiceFactory,

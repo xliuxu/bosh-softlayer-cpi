@@ -1,38 +1,28 @@
 package disk
 
 import (
-	"strconv"
-
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	sl "github.com/maximilien/softlayer-go/softlayer"
+	slc "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer"
 )
 
-const SOFTLAYER_DISK_CREATOR_LOG_TAG = "SoftLayerDiskCreator"
-
 type SoftLayerCreator struct {
-	softLayerClient sl.Client
+	softLayerClient slc.Client
 	logger          boshlog.Logger
 }
 
-func NewSoftLayerDiskCreator(client sl.Client, logger boshlog.Logger) SoftLayerCreator {
+func NewSoftLayerDiskCreator(client slc.Client, logger boshlog.Logger) SoftLayerCreator {
 	return SoftLayerCreator{
 		softLayerClient: client,
 		logger:          logger,
 	}
 }
 
-func (c SoftLayerCreator) Create(size int, cloudProps DiskCloudProperties, datacenter_id int) (Disk, error) {
-	c.logger.Debug(SOFTLAYER_DISK_CREATOR_LOG_TAG, "Creating disk of size '%d'", size)
-
-	storageService, err := c.softLayerClient.GetSoftLayer_Network_Storage_Service()
+func (c SoftLayerCreator) Create(size int, datacenter string, cloudProps DiskCloudProperties,) (Disk, error) {
+	size = c.getSoftLayerDiskSize(size)
+	disk, err := c.softLayerClient.CreateVolume(datacenter, size, cloudProps.Iops)
 	if err != nil {
-		return SoftLayerDisk{}, bosherr.WrapError(err, "Create SoftLayer Network Storage Service error.")
-	}
-
-	disk, err := storageService.CreateNetworkStorage(c.getSoftLayerDiskSize(size), cloudProps.Iops, strconv.Itoa(datacenter_id), cloudProps.UseHourlyPricing)
-	if err != nil {
-		return SoftLayerDisk{}, bosherr.WrapError(err, "Create SoftLayer iSCSI disk error.")
+		return nil, bosherr.WrapErrorf(err, "Ordering Performance iSCSI disk with disk size `%dG`, iops `%d`", size, cloudProps.Iops)
 	}
 
 	return NewSoftLayerDisk(disk.Id, c.softLayerClient, c.logger), nil

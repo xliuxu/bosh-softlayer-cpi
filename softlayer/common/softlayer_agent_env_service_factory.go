@@ -23,10 +23,7 @@ func NewSoftLayerAgentEnvServiceFactory(
 	}
 }
 
-func (f SoftLayerAgentEnvServiceFactory) New(
-	vm VM,
-	softlayerFileService SoftlayerFileService,
-) AgentEnvService {
+func (f SoftLayerAgentEnvServiceFactory) New(vm VM, softlayerFileService SoftlayerFileService) AgentEnvService {
 	if f.agentEnvService == "registry" {
 		return NewRegistryAgentEnvService(f.registryOptions, strconv.Itoa(vm.ID()), f.logger)
 	}

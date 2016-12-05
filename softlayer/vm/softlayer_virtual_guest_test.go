@@ -69,7 +69,7 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 			},
 		}
 
-		vm = NewSoftLayerVirtualGuest(virtualGuest, fakeSoftLayerClient, sshClient, logger)
+		vm = NewSoftLayerInstance(virtualGuest, fakeSoftLayerClient, sshClient, logger)
 		vm.SetAgentEnvService(agentEnvService)
 	})
 

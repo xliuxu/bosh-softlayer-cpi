@@ -17,7 +17,7 @@ func NewSetVMMetadata(
 	return
 }
 
-func (a SetVMMetadataAction) Run(vmCID VMCID, metadata VMMetadata) (interface{}, error) {
+func (a SetVMMetadataAction) Run(vmCID VMCID, metadata map[string]interface{}) (interface{}, error) {
 	vm, found, err := a.vmFinder.Find(int(vmCID))
 	if err != nil || !found {
 		return nil, bosherr.WrapErrorf(err, "Finding VM '%s'", vmCID)

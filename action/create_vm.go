@@ -15,7 +15,6 @@ import (
 type CreateVMAction struct {
 	stemcellFinder    bslcstem.StemcellFinder
 	vmCreatorProvider CreatorProvider
-	vmCreator         VMCreator
 	vmCloudProperties *VMCloudProperties
 	options           ConcreteFactoryOptions
 }

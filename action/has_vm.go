@@ -16,10 +16,6 @@ func NewHasVM(
 }
 
 func (a HasVMAction) Run(vmCID VMCID) (bool, error) {
-	_, found, err := a.vmFinder.Find(int(vmCID))
-	if err != nil {
-		return false, nil
-	}
-
+	_, found := a.vmFinder.Find(int(vmCID))
 	return found, nil
 }

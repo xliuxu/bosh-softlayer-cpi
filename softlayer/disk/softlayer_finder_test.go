@@ -17,7 +17,7 @@ var _ = Describe("SoftLayerFinder", func() {
 	var (
 		fc     *fakeclient.FakeSoftLayerClient
 		logger boshlog.Logger
-		finder SoftLayerFinder
+		finder SoftLayerDiskFinder
 	)
 
 	BeforeEach(func() {

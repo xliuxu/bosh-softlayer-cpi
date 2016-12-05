@@ -18,7 +18,7 @@ func NewRebootVM(
 }
 
 func (a RebootVMAction) Run(vmCID VMCID) (interface{}, error) {
-	vm, found, err := a.vmFinder.Find(int(vmCID))
+	vm, err := a.vmFinder.Find(int(vmCID))
 	if err != nil {
 		return nil, bosherr.WrapErrorf(err, "Finding vm '%s'", vmCID)
 	}

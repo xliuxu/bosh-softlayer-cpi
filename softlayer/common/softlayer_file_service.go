@@ -16,7 +16,6 @@ type SoftlayerFileService interface {
 
 type softlayerFileService struct {
 	sshClient util.SshClient
-	vm        VM
 	logger    boshlog.Logger
 	logTag    string
 }

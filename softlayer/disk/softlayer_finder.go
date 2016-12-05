@@ -10,16 +10,16 @@ import (
 
 const SOFTLAYER_DISK_FINDER_LOG_TAG = "SoftLayerDiskFinder"
 
-type SoftLayerFinder struct {
+type SoftLayerDiskFinder struct {
 	softLayerClient slc.Client
 	logger          boshlog.Logger
 }
 
-func NewSoftLayerDiskFinder(client slc.Client, logger boshlog.Logger) SoftLayerFinder {
-	return SoftLayerFinder{softLayerClient: client, logger: logger}
+func NewSoftLayerDiskFinder(client slc.Client, logger boshlog.Logger) SoftLayerDiskFinder {
+	return SoftLayerDiskFinder{softLayerClient: client, logger: logger}
 }
 
-func (f SoftLayerFinder) Find(id int) (Disk, bool, error) {
+func (f SoftLayerDiskFinder) Find(id int) (Disk, bool, error) {
 	f.logger.Debug(SOFTLAYER_DISK_FINDER_LOG_TAG, "Finding disk '%s'", id)
 
 	service, err := f.softLayerClient.GetSoftLayer_Network_Storage_Service()
