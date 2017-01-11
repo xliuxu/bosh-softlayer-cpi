@@ -5,7 +5,9 @@ import (
 	"net"
 	"time"
 
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/models"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -17,11 +19,8 @@ import (
 	slhelper "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	operations "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/client/vm"
 	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
-	util "github.com/cloudfoundry/bosh-softlayer-cpi/util"
 
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
-
-	"github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/models"
 )
 
 const SOFTLAYER_POOL_CREATOR_LOG_TAG = "SoftLayerPoolCreator"
@@ -74,8 +73,15 @@ func (c *softLayerPoolCreator) Create(agentID string, stemcell bslcstem.Stemcell
 
 // Private methods
 func (c *softLayerPoolCreator) createFromVMPool(agentID string, stemcell bslcstem.Stemcell, cloudProps VMCloudProperties, networks Networks, env Environment) (VM, error) {
-	var err error
-	virtualGuestTemplate, err := CreateVirtualGuestTemplate(stemcell, cloudProps, networks, CreateUserDataForInstance(agentID, networks, c.registryOptions))
+	userDataContents, err := CreateUserDataForInstance(agentID, networks, c.registryOptions)
+	if err != nil {
+		return nil, bosherr.WrapError(err, "Creating VirtualGuest UserData")
+	}
+	virtualGuestTemplate, err := CreateVirtualGuestTemplate(stemcell, cloudProps, networks, userDataContents)
+	if err != nil {
+		return nil, bosherr.WrapError(err, "Creating VirtualGuest template")
+	}
+
 	filter := &models.VMFilter{
 		CPU:         int32(virtualGuestTemplate.StartCpus),
 		MemoryMb:    int32(virtualGuestTemplate.MaxMemory),
@@ -150,7 +156,12 @@ func (c *softLayerPoolCreator) createFromVMPool(agentID string, stemcell bslcste
 }
 
 func (c *softLayerPoolCreator) createBySoftlayer(agentID string, stemcell bslcstem.Stemcell, cloudProps VMCloudProperties, networks Networks, env Environment) (VM, error) {
-	virtualGuestTemplate, err := CreateVirtualGuestTemplate(stemcell, cloudProps, networks, CreateUserDataForInstance(agentID, networks, c.registryOptions))
+	userDataContents, err := CreateUserDataForInstance(agentID, networks, c.registryOptions)
+	if err != nil {
+		return nil, bosherr.WrapError(err, "Creating VirtualGuest UserData")
+	}
+
+	virtualGuestTemplate, err := CreateVirtualGuestTemplate(stemcell, cloudProps, networks, userDataContents)
 	if err != nil {
 		return nil, bosherr.WrapError(err, "Creating VirtualGuest template")
 	}

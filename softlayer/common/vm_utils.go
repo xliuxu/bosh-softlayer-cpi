@@ -1,6 +1,7 @@
 package common
 
 import (
+	"encoding/base64"
 	"bytes"
 	"fmt"
 	"net"
@@ -121,7 +122,7 @@ func CreateAgentUserData(agentID string, cloudProps VMCloudProperties, networks 
 	return agentEnv
 }
 
-func CreateUserDataForInstance(agentID string, networks Networks, registryOptions RegistryOptions) string {
+func CreateUserDataForInstance(agentID string, networks Networks, registryOptions RegistryOptions) (string, error) {
 	serverName := fmt.Sprintf("vm-%s", agentID)
 	userDataContents := UserDataContentsType{
 		Registry: RegistryType{
@@ -135,8 +136,12 @@ func CreateUserDataForInstance(agentID string, networks Networks, registryOption
 			Name: serverName,
 		},
 	}
-	contentsBytes, _ := json.Marshal(userDataContents)
-	return string(contentsBytes)
+	contentsBytes, err := json.Marshal(userDataContents)
+	if err != nil {
+		return "", bosherr.WrapError(err, "Preparing user data contents")
+	}
+
+	return  base64.RawURLEncoding.EncodeToString(contentsBytes)
 }
 
 func UpdateDavConfig(config *DavConfig, directorIP string) (err error) {
