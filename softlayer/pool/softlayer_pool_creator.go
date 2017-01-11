@@ -5,9 +5,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
 	"github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/pool/models"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
+	"github.com/go-openapi/strfmt"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"

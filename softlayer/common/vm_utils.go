@@ -1,8 +1,8 @@
 package common
 
 import (
-	"encoding/base64"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"net"
 	"net/url"
@@ -141,7 +141,7 @@ func CreateUserDataForInstance(agentID string, networks Networks, registryOption
 		return "", bosherr.WrapError(err, "Preparing user data contents")
 	}
 
-	return  base64.RawURLEncoding.EncodeToString(contentsBytes)
+	return base64.RawURLEncoding.EncodeToString(contentsBytes), nil
 }
 
 func UpdateDavConfig(config *DavConfig, directorIP string) (err error) {
