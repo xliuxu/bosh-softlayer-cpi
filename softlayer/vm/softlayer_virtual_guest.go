@@ -15,17 +15,16 @@ import (
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
-	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	sl "github.com/maximilien/softlayer-go/softlayer"
+	datatypes "github.com/maximilien/softlayer-go/data_types"
 
-	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
 	bslcdisk "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/disk"
 	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
+	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 
-	api "github.com/cloudfoundry/bosh-softlayer-cpi/api"
-	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
-	datatypes "github.com/maximilien/softlayer-go/data_types"
-	sldatatypes "github.com/maximilien/softlayer-go/data_types"
+	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 )
 
 type softLayerVirtualGuest struct {
@@ -42,8 +41,8 @@ type softLayerVirtualGuest struct {
 }
 
 func NewSoftLayerVirtualGuest(virtualGuest datatypes.SoftLayer_Virtual_Guest, softLayerClient sl.Client, sshClient util.SshClient, logger boshlog.Logger) VM {
-	slh.TIMEOUT = 60 * time.Minute
-	slh.POLLING_INTERVAL = 10 * time.Second
+	api.TIMEOUT = 60 * time.Minute
+	api.POLLING_INTERVAL = 10 * time.Second
 
 	return &softLayerVirtualGuest{
 		id: virtualGuest.Id,
@@ -125,7 +124,7 @@ func (vm *softLayerVirtualGuest) Reboot() error {
 }
 
 func (vm *softLayerVirtualGuest) ReloadOS(stemcell bslcstem.Stemcell) error {
-	reload_OS_Config := sldatatypes.Image_Template_Config{
+	reload_OS_Config := datatypes.Image_Template_Config{
 		ImageTemplateId: strconv.Itoa(stemcell.ID()),
 	}
 
@@ -180,7 +179,7 @@ func (vm *softLayerVirtualGuest) SetMetadata(vmMetadata VMMetadata) error {
 	return nil
 }
 
-func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
+func (vm *softLayerVirtualGuest) ConfigureNetworksSettings(networks Networks) error {
 	oldAgentEnv, err := vm.agentEnvService.Fetch()
 	if err != nil {
 		return bosherr.WrapErrorf(err, "Failed to unmarshal userdata from virutal guest with id: %d.", vm.ID())
@@ -207,9 +206,8 @@ func (s *sshClientWrapper) Output(command string) ([]byte, error) {
 	return []byte(o), err
 }
 
-func (vm *softLayerVirtualGuest) ConfigureNetworks2(networks Networks) error {
+func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
 	ubuntu := Ubuntu{
-		SoftLayerClient: vm.softLayerClient.GetHttpClient(),
 		SSHClient: &sshClientWrapper{
 			client:   vm.sshClient,
 			ip:       vm.GetPrimaryBackendIP(),
@@ -217,14 +215,83 @@ func (vm *softLayerVirtualGuest) ConfigureNetworks2(networks Networks) error {
 			password: vm.GetRootPassword(),
 		},
 		SoftLayerFileService: NewSoftlayerFileService(util.GetSshClient(), vm.logger),
+		LinkNamer:            NewIndexedNamer(networks),
 	}
 
-	err := ubuntu.ConfigureNetwork(networks, vm)
+	//dynamic, manual, err := categorizeNetworks(networks)
+	//if err != nil {
+	//	return nil, bosherr.WrapError(err, "Categorizing Networks")
+	//}
+	//
+	//dynamicInterfaces, err := ubuntu.DynamicInterfaces(vm.virtualGuest.NetworkComponents, dynamic)
+	//if err != nil {
+	//	return nil, bosherr.WrapError(err, "Getting Dynamic Interfaces")
+	//}
+	//
+	//manualInterfaces, err := ubuntu.ManualInterfaces(vm.virtualGuest.NetworkComponents, manual)
+	//if err != nil {
+	//	return nil, bosherr.WrapError(err, "Getting Manual Interfaces")
+	//}
+
+	networks, err := ubuntu.NormalizeNetworkDefinitions(vm.virtualGuest, networks)
 	if err != nil {
-		return bosherr.WrapErrorf(err, "Failed to configure networking for virtual guest with id: %d.", vm.ID())
+		return bosherr.WrapError(err, "Normalizing Network Definitions")
 	}
 
-	return nil
+	componentByNetwork, err := ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
+	if err != nil {
+		return bosherr.WrapError(err, "Mapping Network Component and name")
+	}
+
+	networks, err = ubuntu.NormalizeDynamics(vm.virtualGuest, networks)
+	if err != nil {
+		return bosherr.WrapError(err, "Normalizing Dynamic Networks Definitions")
+	}
+
+	componentByNetwork, err = ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
+	if err != nil {
+		return bosherr.WrapError(err, "Mapping Network Component and name")
+	}
+
+	interfaces := []Interface{}
+	for networkName, nw := range networks {
+		component, ok := componentByNetwork[networkName]
+		if !ok {
+			return bosherr.Errorf("network not found: %q", networkName)
+		}
+
+		subnet, err := component.NetworkVlan.Subnets.Containing(nw.IP)
+		if err != nil {
+			return bosherr.WrapErrorf(err, "Determining IP `%s`", nw.IP)
+		}
+
+		linkName := fmt.Sprintf("%s%d", component.Name, component.Port)
+		if nw.Type != "dynamic" {
+			linkName, err = ubuntu.LinkNamer.Name(linkName, networkName)
+			if err != nil {
+				return bosherr.WrapErrorf(err, "Linking network with name `%s`", networkName)
+			}
+		}
+
+		intf := Interface{
+			Name:                linkName,
+			Auto:                true,
+			AllowHotplug:        true,
+			SourcePolicyRouting: nw.SourcePolicyRouting(),
+			Address:             nw.IP,
+			Netmask:             subnet.Netmask,
+			Gateway:             subnet.Gateway,
+			DefaultGateway:      nw.HasDefaultGateway(),
+		}
+
+		if component.NetworkVlan.Id == vm.virtualGuest.PrimaryBackendNetworkComponent.NetworkVlan.Id {
+			intf.Routes = SoftlayerPrivateRoutes(subnet.Gateway)
+		}
+
+		interfaces = append(interfaces, intf)
+	}
+
+	return ubuntu.ConfigureNetwork(interfaces, vm.GetRootPassword(), vm.GetPrimaryBackendIP())
 }
 
 func (vm *softLayerVirtualGuest) AttachDisk(disk bslcdisk.Disk) error {
@@ -242,7 +309,7 @@ func (vm *softLayerVirtualGuest) AttachDisk(disk bslcdisk.Disk) error {
 
 	totalTime := time.Duration(0)
 	if err == nil && allowed == false {
-		for totalTime < slh.TIMEOUT {
+		for totalTime < api.TIMEOUT {
 			allowable, err := networkStorageService.AttachNetworkStorageToVirtualGuest(vm.virtualGuest, disk.ID())
 			if err != nil {
 				if !strings.Contains(err.Error(), "A Volume Provisioning is currently in progress on volume") {
@@ -254,11 +321,11 @@ func (vm *softLayerVirtualGuest) AttachDisk(disk bslcdisk.Disk) error {
 				}
 			}
 
-			totalTime += slh.POLLING_INTERVAL
-			time.Sleep(slh.POLLING_INTERVAL)
+			totalTime += api.POLLING_INTERVAL
+			time.Sleep(api.POLLING_INTERVAL)
 		}
 	}
-	if totalTime >= slh.TIMEOUT {
+	if totalTime >= api.TIMEOUT {
 		return bosherr.Error("Waiting for grantting access to virutal guest TIME OUT!")
 	}
 
@@ -433,7 +500,7 @@ func (vm *softLayerVirtualGuest) waitForVolumeAttached(volume datatypes.SoftLaye
 
 	var deviceName string
 	totalTime := time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		newDisks, err := vm.getIscsiDeviceNamesBasedOnShellScript(hasMultiPath)
 		if err != nil {
 			return "", bosherr.WrapError(err, fmt.Sprintf("Failed to get devices names from virtual guest `%d`", vm.ID()))
@@ -463,8 +530,8 @@ func (vm *softLayerVirtualGuest) waitForVolumeAttached(volume datatypes.SoftLaye
 			return deviceName, nil
 		}
 
-		totalTime += slh.POLLING_INTERVAL
-		time.Sleep(slh.POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return "", bosherr.Errorf("Failed to attach disk '%d' to virtual guest '%d'", volume.Id, vm.ID())
@@ -724,7 +791,7 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForOSReload(softLaye
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		activeTransactions, err := virtualGuestService.GetActiveTransactions(vm.ID())
 		if err != nil {
 			if !strings.Contains(err.Error(), "HTTP error code") {
@@ -737,11 +804,11 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForOSReload(softLaye
 			break
 		}
 
-		totalTime += slh.POLLING_INTERVAL
-		time.Sleep(slh.POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
-	if totalTime >= slh.TIMEOUT {
+	if totalTime >= api.TIMEOUT {
 		return errors.New(fmt.Sprintf("Waiting for OS Reload transaction to start TIME OUT!"))
 	}
 
@@ -764,7 +831,7 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForDeleteVM(softLaye
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		activeTransactions, err := virtualGuestService.GetActiveTransactions(virtualGuestId)
 		if err != nil {
 			if !strings.Contains(err.Error(), "HTTP error code") {
@@ -777,16 +844,16 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForDeleteVM(softLaye
 			break
 		}
 
-		totalTime += slh.POLLING_INTERVAL
-		time.Sleep(slh.POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
-	if totalTime >= slh.TIMEOUT {
+	if totalTime >= api.TIMEOUT {
 		return errors.New(fmt.Sprintf("Waiting for DeleteVM transaction to start TIME OUT!"))
 	}
 
 	totalTime = time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		vm1, err := virtualGuestService.GetObject(virtualGuestId)
 		if err != nil || vm1.Id == 0 {
 			vm.logger.Info(SOFTLAYER_VM_LOG_TAG, "VM doesn't exist. Delete done", nil)
@@ -816,11 +883,11 @@ func (vm *softLayerVirtualGuest) postCheckActiveTransactionsForDeleteVM(softLaye
 		}
 
 		vm.logger.Info(SOFTLAYER_VM_LOG_TAG, "This is a short transaction, waiting for all active transactions to complete", nil)
-		totalTime += slh.POLLING_INTERVAL
-		time.Sleep(slh.POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
-	if totalTime >= slh.TIMEOUT {
+	if totalTime >= api.TIMEOUT {
 		return errors.New(fmt.Sprintf("After deleting a vm, waiting for active transactions to complete TIME OUT!"))
 	}
 
@@ -865,4 +932,22 @@ func (vm *softLayerVirtualGuest) searchMounts() ([]Mount, error) {
 	}
 
 	return mounts, nil
+}
+
+func categorizeNetworks(networks Networks) (Networks, Networks, error) {
+	dynamic := Networks{}
+	manual := Networks{}
+
+	for name, nw := range networks {
+		switch nw.Type {
+		case "dynamic":
+			dynamic[name] = nw
+		case "manual", "":
+			manual[name] = nw
+		default:
+			return nil, nil, fmt.Errorf("unexpected network type: %s", nw.Type)
+		}
+	}
+
+	return dynamic, manual, nil
 }

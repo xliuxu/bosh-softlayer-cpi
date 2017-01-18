@@ -37,13 +37,13 @@ type SoftLayer_Virtual_Guest struct {
 	PrimaryBackendIpAddress string `json:"primaryBackendIpAddress,omitempty"`
 	PrimaryIpAddress        string `json:"primaryIpAddress,omitempty"`
 
-	PrimaryNetworkComponent        *PrimaryNetworkComponent        `json:"primaryNetworkComponent,omitempty"`
-	PrimaryBackendNetworkComponent *PrimaryBackendNetworkComponent `json:"primaryBackendNetworkComponent,omitempty"`
+	PrimaryNetworkComponent        *SoftLayer_Virtual_Guest_Network_Component `json:"primaryNetworkComponent,omitempty"`
+	PrimaryBackendNetworkComponent *SoftLayer_Virtual_Guest_Network_Component `json:"primaryBackendNetworkComponent,omitempty"`
 
-	Location          *SoftLayer_Location `json:"location"`
-	Datacenter        *SoftLayer_Location `json:"datacenter"`
-	NetworkComponents []NetworkComponents `json:"networkComponents,omitempty"`
-	UserData          []UserData          `json:"userData,omitempty"`
+	Location          *SoftLayer_Location                         `json:"location"`
+	Datacenter        *SoftLayer_Location                         `json:"datacenter"`
+	NetworkComponents []SoftLayer_Virtual_Guest_Network_Component `json:"networkComponents,omitempty"`
+	UserData          []UserData                                  `json:"userData,omitempty"`
 
 	OperatingSystem *SoftLayer_Operating_System `json:"operatingSystem"`
 
@@ -78,12 +78,12 @@ type SoftLayer_Virtual_Guest_Template struct {
 	BlockDeviceTemplateGroup     *BlockDeviceTemplateGroup `json:"blockDeviceTemplateGroup,omitempty"`
 
 	//Optional
-	DedicatedAccountHostOnlyFlag   bool                            `json:"dedicatedAccountHostOnlyFlag,omitempty"`
-	NetworkComponents              []NetworkComponents             `json:"networkComponents,omitempty"`
-	PrivateNetworkOnlyFlag         bool                            `json:"privateNetworkOnlyFlag,omitempty"`
-	PrimaryNetworkComponent        *PrimaryNetworkComponent        `json:"primaryNetworkComponent,omitempty"`
-	PrimaryBackendNetworkComponent *PrimaryBackendNetworkComponent `json:"primaryBackendNetworkComponent,omitempty"`
-	PostInstallScriptUri           string                          `json:"postInstallScriptUri,omitempty"`
+	DedicatedAccountHostOnlyFlag   bool                                       `json:"dedicatedAccountHostOnlyFlag,omitempty"`
+	NetworkComponents              []NetworkComponents                        `json:"networkComponents,omitempty"`
+	PrivateNetworkOnlyFlag         bool                                       `json:"privateNetworkOnlyFlag,omitempty"`
+	PrimaryNetworkComponent        *SoftLayer_Virtual_Guest_Network_Component `json:"primaryNetworkComponent,omitempty"`
+	PrimaryBackendNetworkComponent *SoftLayer_Virtual_Guest_Network_Component `json:"primaryBackendNetworkComponent,omitempty"`
+	PostInstallScriptUri           string                                     `json:"postInstallScriptUri,omitempty"`
 
 	BlockDevices []BlockDevice `json:"blockDevices,omitempty"`
 	UserData     []UserData    `json:"userData,omitempty"`
@@ -103,21 +103,6 @@ type BlockDeviceTemplateGroup struct {
 type NetworkComponents struct {
 	//Required, defaults to 10
 	MaxSpeed int `json:"maxSpeed,omitempty"`
-}
-
-type NetworkVlan struct {
-	//Required
-	Id int `json:"id,omitempty"`
-}
-
-type PrimaryNetworkComponent struct {
-	//Required
-	NetworkVlan NetworkVlan `json:"networkVlan,omitempty"`
-}
-
-type PrimaryBackendNetworkComponent struct {
-	//Required
-	NetworkVlan NetworkVlan `json:"networkVlan,omitempty"`
 }
 
 type DiskImage struct {

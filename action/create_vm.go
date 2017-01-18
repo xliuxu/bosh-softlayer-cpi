@@ -3,12 +3,11 @@ package action
 import (
 	"time"
 
-	bosherr "github.com/cloudfoundry/bosh-utils/errors"
-
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
-	helper "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
-	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 
+	bosherr "github.com/cloudfoundry/bosh-utils/errors"
+	bslcstem "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/stemcell"
 	sldatatypes "github.com/maximilien/softlayer-go/data_types"
 )
 
@@ -35,8 +34,8 @@ func NewCreateVM(
 func (a CreateVMAction) Run(agentID string, stemcellCID StemcellCID, cloudProps VMCloudProperties, networks Networks, diskIDs []DiskCID, env Environment) (string, error) {
 	a.updateCloudProperties(&cloudProps)
 
-	helper.TIMEOUT = 30 * time.Second
-	helper.POLLING_INTERVAL = 5 * time.Second
+	api.TIMEOUT = 30 * time.Second
+	api.POLLING_INTERVAL = 5 * time.Second
 
 	stemcell, err := a.stemcellFinder.FindById(int(stemcellCID))
 	if err != nil {
@@ -92,13 +91,13 @@ func (a CreateVMAction) updateCloudProperties(cloudProps *VMCloudProperties) {
 	if len(cloudProps.Domain) == 0 {
 		a.vmCloudProperties.Domain = "softlayer.com"
 	}
-	helper.LengthOfHostName = len(a.vmCloudProperties.VmNamePrefix + "." + a.vmCloudProperties.Domain)
+	api.LengthOfHostName = len(a.vmCloudProperties.VmNamePrefix + "." + a.vmCloudProperties.Domain)
 
 	if len(cloudProps.NetworkComponents) == 0 {
 		a.vmCloudProperties.NetworkComponents = []sldatatypes.NetworkComponents{{MaxSpeed: 1000}}
 	}
 
-	if helper.LocalDiskFlagNotSet == true {
+	if api.LocalDiskFlagNotSet == true {
 		a.vmCloudProperties.LocalDiskFlag = true
 	}
 }

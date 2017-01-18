@@ -4,20 +4,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pivotal-golang/clock"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
+	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
+
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshretry "github.com/cloudfoundry/bosh-utils/retrystrategy"
-	"github.com/pivotal-golang/clock"
 
 	datatypes "github.com/maximilien/softlayer-go/data_types"
 	sl "github.com/maximilien/softlayer-go/softlayer"
-)
-
-var (
-	TIMEOUT             time.Duration
-	POLLING_INTERVAL    time.Duration
-	LocalDiskFlagNotSet bool
-	LengthOfHostName    int
 )
 
 type SoftLayer_Hardware_Parameters struct {
@@ -90,7 +86,7 @@ func WaitForVirtualGuestToHaveNoRunningTransactions(softLayerClient sl.Client, v
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		activeTransactions, err := virtualGuestService.GetActiveTransactions(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapError(err, "Getting active transaction from SoftLayer client")
@@ -100,8 +96,8 @@ func WaitForVirtualGuestToHaveNoRunningTransactions(softLayerClient sl.Client, v
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have no active transactions", virtualGuestId)
@@ -114,7 +110,7 @@ func WaitForVirtualGuestToHaveRunningTransaction(softLayerClient sl.Client, virt
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		activeTransactions, err := virtualGuestService.GetActiveTransactions(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapErrorf(err, "Getting active transaction against virtual guest %d", virtualGuestId)
@@ -124,8 +120,8 @@ func WaitForVirtualGuestToHaveRunningTransaction(softLayerClient sl.Client, virt
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have no active transactions", virtualGuestId)
@@ -139,7 +135,7 @@ func WaitForVirtualGuestToHaveNoRunningTransaction(softLayerClient sl.Client, vi
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		activeTransactions, err := virtualGuestService.GetActiveTransactions(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapErrorf(err, "Getting active transaction against virtual guest %d", virtualGuestId)
@@ -149,8 +145,8 @@ func WaitForVirtualGuestToHaveNoRunningTransaction(softLayerClient sl.Client, vi
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have no active transactions", virtualGuestId)
@@ -164,7 +160,7 @@ func WaitForVirtualGuest(softLayerClient sl.Client, virtualGuestId int, targetSt
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		vgPowerState, err := virtualGuestService.GetPowerState(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapErrorf(err, "Getting Power State for virtual guest with ID '%d'", virtualGuestId)
@@ -174,8 +170,8 @@ func WaitForVirtualGuest(softLayerClient sl.Client, virtualGuestId int, targetSt
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have be in state '%s'", virtualGuestId, targetState)
@@ -188,7 +184,7 @@ func WaitForVirtualGuestLastCompleteTransaction(softLayerClient sl.Client, virtu
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		lastTransaction, err := virtualGuestService.GetLastTransaction(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapErrorf(err, "Getting Last Complete Transaction for virtual guest with ID '%d'", virtualGuestId)
@@ -198,8 +194,8 @@ func WaitForVirtualGuestLastCompleteTransaction(softLayerClient sl.Client, virtu
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have last transaction '%s'", virtualGuestId, targetTransaction)
@@ -226,7 +222,7 @@ func WaitForVirtualGuestIsNotPingable(softLayerClient sl.Client, virtualGuestId 
 		})
 
 	timeService := clock.NewClock()
-	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(TIMEOUT, POLLING_INTERVAL, checkPingableRetryable, timeService, logger)
+	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(api.TIMEOUT, api.POLLING_INTERVAL, checkPingableRetryable, timeService, logger)
 	err = timeoutRetryStrategy.Try()
 	if err != nil {
 		return bosherr.Errorf("Waiting for virtual guest with ID '%d' is not pingable", virtualGuestId)
@@ -256,7 +252,7 @@ func WaitForVirtualGuestIsPingable(softLayerClient sl.Client, virtualGuestId int
 		})
 
 	timeService := clock.NewClock()
-	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(TIMEOUT, POLLING_INTERVAL, checkPingableRetryable, timeService, logger)
+	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(api.TIMEOUT, api.POLLING_INTERVAL, checkPingableRetryable, timeService, logger)
 	err = timeoutRetryStrategy.Try()
 	if err != nil {
 		return bosherr.Errorf("Waiting for virtual guest with ID '%d' is not pingable", virtualGuestId)
@@ -271,7 +267,7 @@ func WaitForVirtualGuestUpgradeComplete(softLayerClient sl.Client, virtualGuestI
 	}
 
 	totalTime := time.Duration(0)
-	for totalTime < TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		lastTransaction, err := virtualGuestService.GetLastTransaction(virtualGuestId)
 		if err != nil {
 			return bosherr.WrapErrorf(err, "Getting Last Complete Transaction for virtual guest with ID '%d'", virtualGuestId)
@@ -285,8 +281,8 @@ func WaitForVirtualGuestUpgradeComplete(softLayerClient sl.Client, virtualGuestI
 			return nil
 		}
 
-		totalTime += POLLING_INTERVAL
-		time.Sleep(POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return bosherr.Errorf("Waiting for virtual guest with ID '%d' to update complete", virtualGuestId)
@@ -312,7 +308,7 @@ func WaitForVirtualGuestToTargetState(softLayerClient sl.Client, virtualGuestId 
 		})
 
 	timeService := clock.NewClock()
-	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(TIMEOUT, POLLING_INTERVAL, getTargetStateRetryable, timeService, logger)
+	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(api.TIMEOUT, api.POLLING_INTERVAL, getTargetStateRetryable, timeService, logger)
 	err = timeoutRetryStrategy.Try()
 	if err != nil {
 		return bosherr.Errorf("Waiting for virtual guest with ID '%d' to have be in state '%s'", virtualGuestId, targetState)
@@ -343,4 +339,51 @@ func GetObjectDetailsOnHardware(softLayerClient sl.Client, hardwareId int) (data
 		return datatypes.SoftLayer_Hardware{}, bosherr.WrapErrorf(err, "Cannot get hardware with id: %d", hardwareId)
 	}
 	return hardware, nil
+}
+
+func GetVlanIds(softLayerClient sl.Client, networks Networks) (int, int, error) {
+	var publicVlanID, privateVlanID int
+
+	for name, nw := range networks {
+		networkSpace, err := getNetworkSpace(softLayerClient, nw.CloudProperties.VlanID)
+		if err != nil {
+			return 0, 0, bosherr.WrapErrorf(err, "Network: %q, VLAN ID: %d", name, nw.CloudProperties.VlanID)
+		}
+
+		switch networkSpace {
+		case "PRIVATE":
+			if privateVlanID == 0 {
+				privateVlanID = nw.CloudProperties.VlanID
+			} else if privateVlanID != nw.CloudProperties.VlanID {
+				return 0, 0, bosherr.Error("Only one private VLAN is supported")
+			}
+		case "PUBLIC":
+			if publicVlanID == 0 {
+				publicVlanID = nw.CloudProperties.VlanID
+			} else if publicVlanID != nw.CloudProperties.VlanID {
+				return 0, 0, bosherr.Error("Only one public VLAN is supported")
+			}
+		default:
+			return 0, 0, bosherr.Errorf("VLAN ID %d: unknown network type '%s'", nw.CloudProperties.VlanID, networkSpace)
+		}
+	}
+
+	if privateVlanID == 0 {
+		return 0, 0, bosherr.Error("A private VLAN is required")
+	}
+
+	return publicVlanID, privateVlanID, nil
+}
+
+func getNetworkSpace(softLayerClient sl.Client, vlanID int) (string, error) {
+	networkVlanService, err := softLayerClient.GetSoftLayer_Network_Vlan_Service()
+	if err != nil {
+		return "", bosherr.WrapErrorf(err, "Getting Softlayer_Network_Vlan_Service")
+	}
+
+	networkVlan, err := networkVlanService.GetObject(vlanID)
+	if err != nil {
+		return "", bosherr.WrapErrorf(err, "Getting vlan info with id `%d`", vlanID)
+	}
+	return networkVlan.NetworkSpace, nil
 }

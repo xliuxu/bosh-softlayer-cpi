@@ -7,7 +7,7 @@ import (
 	sl_datatypes "github.com/maximilien/softlayer-go/data_types"
 	sl "github.com/maximilien/softlayer-go/softlayer"
 
-	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 	boshretry "github.com/cloudfoundry/bosh-utils/retrystrategy"
 
 	"fmt"
@@ -42,7 +42,7 @@ func (f SoftLayerStemcellFinder) FindById(id int) (Stemcell, error) {
 			return false, nil
 		})
 	timeService := clock.NewClock()
-	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(slh.TIMEOUT, slh.POLLING_INTERVAL, execStmtRetryable, timeService, boshlog.NewLogger(boshlog.LevelInfo))
+	timeoutRetryStrategy := boshretry.NewTimeoutRetryStrategy(api.TIMEOUT, api.POLLING_INTERVAL, execStmtRetryable, timeService, boshlog.NewLogger(boshlog.LevelInfo))
 	err = timeoutRetryStrategy.Try()
 	if err != nil {
 		return SoftLayerStemcell{}, bosherr.Error(fmt.Sprintf("Can not find VirtualGuestBlockDeviceTemplateGroup with id `%d`", id))

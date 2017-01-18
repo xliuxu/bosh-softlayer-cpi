@@ -199,7 +199,7 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 		})
 
 		It("returns the expected network", func() {
-			err := vm.ConfigureNetworks(networks)
+			err := vm.ConfigureNetworksSettings(networks)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

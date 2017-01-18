@@ -2,7 +2,7 @@
   "method": "create_vm",
   "arguments": [
     "45632666-9fb1-422a-af35-2ab6102c5c1b",
-    "879741",
+    "1458457",
     {
       "vmNamePrefix": "ecpi-test",
       "domain": "softlayer.com",
@@ -34,7 +34,6 @@
     {
       "default": {
         "type": "dynamic",
-        "ip": "10.0.0.1",
         "dns": [
           "8.8.8.8",
           "10.0.80.11",

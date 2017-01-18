@@ -40,8 +40,6 @@ type VMCloudProperties struct {
 	DedicatedAccountHostOnlyFlag   bool                                       `json:"dedicatedAccountHostOnlyFlag,omitempty"`
 	NetworkComponents              []sldatatypes.NetworkComponents            `json:"networkComponents,omitempty"`
 	PrivateNetworkOnlyFlag         bool                                       `json:"privateNetworkOnlyFlag,omitempty"`
-	PrimaryNetworkComponent        sldatatypes.PrimaryNetworkComponent        `json:"primaryNetworkComponent,omitempty"`
-	PrimaryBackendNetworkComponent sldatatypes.PrimaryBackendNetworkComponent `json:"primaryBackendNetworkComponent,omitempty"`
 	BlockDevices                   []sldatatypes.BlockDevice                  `json:"blockDevices,omitempty"`
 	UserData                       []sldatatypes.UserData                     `json:"userData,omitempty"`
 	PostInstallScriptUri           string                                     `json:"postInstallScriptUri,omitempty"`
@@ -51,8 +49,6 @@ type VMCloudProperties struct {
 	Baremetal             bool   `json:"baremetal,omitempty"`
 	BaremetalStemcell     string `json:"bm_stemcell,omitempty"`
 	BaremetalNetbootImage string `json:"bm_netboot_image,omitempty"`
-
-	DisableOsReload bool `json:"disableOsReload,omitempty"`
 }
 
 type AllowedHostCredential struct {
@@ -96,10 +92,10 @@ const (
 type VM interface {
 	AttachDisk(bslcdisk.Disk) error
 
-	ConfigureNetworks(Networks) error
+	ConfigureNetworksSettings(Networks) error
 
-	//dedicated for setup network by modify /etc/network/interfaces
-	ConfigureNetworks2(Networks) error
+	//specific to configuring network with modifying /etc/network/interfaces
+	ConfigureNetworks(Networks) error
 
 	DetachDisk(bslcdisk.Disk) error
 	Delete(agentId string) error

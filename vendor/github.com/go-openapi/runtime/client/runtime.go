@@ -15,7 +15,6 @@
 package client
 
 import (
-	"crypto/tls"
 	"fmt"
 	"mime"
 	"net/http"
@@ -25,6 +24,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"crypto/tls"
 
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
@@ -77,7 +77,7 @@ func New(host, basePath string, schemes []string) *Runtime {
 		runtime.DefaultMime: runtime.ByteStreamProducer(),
 	}
 	rt.Transport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:    &tls.Config{InsecureSkipVerify: true},
 	}
 	rt.Jar = nil
 	rt.Host = host

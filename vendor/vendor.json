@@ -113,7 +113,7 @@
 			"revisionTime": "2016-10-19T07:03:01Z"
 		},
 		{
-			"checksumSHA1": "EBbEdiRHuI/u0whMY15oJNbaZB0=",
+			"checksumSHA1": "koo9r+E5joh/EhWPfP8Ex3dnlWw=",
 			"path": "github.com/go-openapi/runtime/client",
 			"revision": "2faaf90bf67e0616db00094f2141f99b00a9ebc2",
 			"revisionTime": "2016-10-19T07:03:01Z"
@@ -167,56 +167,46 @@
 			"revisionTime": "2016-10-28T10:15:48Z"
 		},
 		{
-			"origin": "develop",
-			"path": "github.com/maximilien/softlayer-go",
-			"revision": "develop",
-			"version": "develop"
-		},
-		{
-			"checksumSHA1": "E611q4DGLEibKTtgMltyFAeHyqU=",
+			"checksumSHA1": "NjBVJwbYlZW0Q54yBHhHcLxfpDg=",
 			"path": "github.com/maximilien/softlayer-go/client",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
-			"checksumSHA1": "ugei8AHG33d7Mnic/MhYmjNiYeE=",
+			"checksumSHA1": "MLINP/4ftv+/byowTNRvgeYomOU=",
 			"path": "github.com/maximilien/softlayer-go/client/fakes",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "nPaYMMjIl21a30j9R2lURjb8Nts=",
 			"path": "github.com/maximilien/softlayer-go/common",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
-			"checksumSHA1": "QX0ziTd3v7aZ6fsWYQ7CbOl24BM=",
+			"checksumSHA1": "vSKAlOCc+fF+t9S9anWa2i0uIjk=",
 			"path": "github.com/maximilien/softlayer-go/data_types",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
-			"checksumSHA1": "BsdKAcYXM60hA67l2Iao/Jr9N9w=",
+			"checksumSHA1": "LfusBLx06ZifS/wTob7JyysFvXM=",
 			"path": "github.com/maximilien/softlayer-go/services",
-			"revision": "c924c8f534bf5c0f9e02a68809677c3d137cb4dc",
-			"revisionTime": "2016-11-29T14:54:06Z",
-			"version": "develop",
-			"versionExact": "develop"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
-			"checksumSHA1": "UKYqNCJEq4RTrCnmSLDyTarFfTY=",
+			"checksumSHA1": "rAdirobiTWcBwIYxYgySqeqhTSM=",
 			"path": "github.com/maximilien/softlayer-go/softlayer",
-			"revision": "c924c8f534bf5c0f9e02a68809677c3d137cb4dc",
-			"revisionTime": "2016-11-29T14:54:06Z",
-			"version": "develop",
-			"versionExact": "develop"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "TIdT4Jg+JvArPSxEA9nvYqeciDo=",
 			"path": "github.com/maximilien/softlayer-go/test_helpers",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "gcLub3oB+u4QrOJZcYmk/y2AP4k=",
@@ -343,15 +333,15 @@
 			"checksumSHA1": "DQJ3llWDuIWg2rwgxOCMO3d+Dic=",
 			"origin": "github.com/maximilien/softlayer-go/vendor/github.com/onsi/gomega/gbytes",
 			"path": "github.com/onsi/gomega/gbytes",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "Al/kfmShH82O7ioUuXNaCN0N+VM=",
 			"origin": "github.com/maximilien/softlayer-go/vendor/github.com/onsi/gomega/gexec",
 			"path": "github.com/onsi/gomega/gexec",
-			"revision": "1d4217550aef2c9207aeae5a93c7ce5c3c91ef21",
-			"revisionTime": "2016-10-27T06:03:25Z"
+			"revision": "43c184d3ca2881229cbddb3bc3d75f928113ed16",
+			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "H4RBR9kcEWh2lECAzBaOTSvgUuA=",

@@ -3,16 +3,14 @@ package common_test
 import (
 	"encoding/json"
 	"errors"
+	"os"
 
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 	fakebslvm "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/fakes"
-	slhelper "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"os"
-
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 )
 
@@ -110,7 +108,7 @@ var _ = Describe("SoftlayerAgentEnvService", func() {
 
 		Context("when the length of hostname is greater than 63 chars", func() {
 			BeforeEach(func() {
-				slhelper.LengthOfHostName = 64
+				api.LengthOfHostName = 64
 				fakeSoftlayerFileService.UploadErr = errors.New("A faked error occurred")
 			})
 

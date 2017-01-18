@@ -11,14 +11,14 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
+
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
 	bmscl "github.com/cloudfoundry-community/bosh-softlayer-tools/clients"
-	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	sl "github.com/maximilien/softlayer-go/softlayer"
 
-	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 	"github.com/cloudfoundry/bosh-softlayer-cpi/util"
 
@@ -42,8 +42,8 @@ type softLayerHardware struct {
 }
 
 func NewSoftLayerHardware(hardware datatypes.SoftLayer_Hardware, softLayerClient sl.Client, baremetalClient bmscl.BmpClient, sshClient util.SshClient, logger boshlog.Logger) VM {
-	slh.TIMEOUT = 60 * time.Minute
-	slh.POLLING_INTERVAL = 10 * time.Second
+	api.TIMEOUT = 60 * time.Minute
+	api.POLLING_INTERVAL = 10 * time.Second
 
 	return &softLayerHardware{
 		id: hardware.Id,
@@ -144,7 +144,7 @@ func (vm *softLayerHardware) SetMetadata(vmMetadata VMMetadata) error {
 	return nil
 }
 
-func (vm *softLayerHardware) ConfigureNetworks(networks Networks) error {
+func (vm *softLayerHardware) ConfigureNetworksSettings(networks Networks) error {
 	oldAgentEnv, err := vm.agentEnvService.Fetch()
 	if err != nil {
 		return bosherr.WrapErrorf(err, "Failed to unmarshal userdata from hardware with id: %d.", vm.ID())
@@ -159,7 +159,7 @@ func (vm *softLayerHardware) ConfigureNetworks(networks Networks) error {
 	return nil
 }
 
-func (vm *softLayerHardware) ConfigureNetworks2(networks Networks) error {
+func (vm *softLayerHardware) ConfigureNetworks(networks Networks) error {
 	return api.NotSupportedError{}
 }
 
@@ -178,7 +178,7 @@ func (vm *softLayerHardware) AttachDisk(disk bslcdisk.Disk) error {
 
 	totalTime := time.Duration(0)
 	if err == nil && allowed == false {
-		for totalTime < slh.TIMEOUT {
+		for totalTime < api.TIMEOUT {
 			allowable, err := networkStorageService.AttachNetworkStorageToHardware(vm.hardware, disk.ID())
 			if err != nil {
 				if !strings.Contains(err.Error(), "HTTP error code") {
@@ -190,11 +190,11 @@ func (vm *softLayerHardware) AttachDisk(disk bslcdisk.Disk) error {
 				}
 			}
 
-			totalTime += slh.POLLING_INTERVAL
-			time.Sleep(slh.POLLING_INTERVAL)
+			totalTime += api.POLLING_INTERVAL
+			time.Sleep(api.POLLING_INTERVAL)
 		}
 	}
-	if totalTime >= slh.TIMEOUT {
+	if totalTime >= api.TIMEOUT {
 		return bosherr.Error("Waiting for grantting access to hardware TIME OUT!")
 	}
 
@@ -343,7 +343,7 @@ func (vm *softLayerHardware) waitForVolumeAttached(volume datatypes.SoftLayer_Ne
 
 	var deviceName string
 	totalTime := time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		newDisks, err := vm.getIscsiDeviceNamesBasedOnShellScript(hasMultiPath)
 		if err != nil {
 			return "", bosherr.WrapError(err, fmt.Sprintf("Failed to get devices names from hardware `%d`", vm.ID()))
@@ -373,8 +373,8 @@ func (vm *softLayerHardware) waitForVolumeAttached(volume datatypes.SoftLayer_Ne
 			return deviceName, nil
 		}
 
-		totalTime += slh.POLLING_INTERVAL
-		time.Sleep(slh.POLLING_INTERVAL)
+		totalTime += api.POLLING_INTERVAL
+		time.Sleep(api.POLLING_INTERVAL)
 	}
 
 	return "", bosherr.Errorf("Failed to attach disk '%d' to hardware '%d'", volume.Id, vm.ID())
@@ -676,9 +676,9 @@ func (vm *softLayerHardware) provisionBaremetal(server_id string, stemcell strin
 	}
 
 	task_id := createBaremetalResponse.Data.TaskId
-	slh.TIMEOUT = 10 * time.Minute
+	api.TIMEOUT = 10 * time.Minute
 	totalTime := time.Duration(0)
-	for totalTime < slh.TIMEOUT {
+	for totalTime < api.TIMEOUT {
 		taskOutput, err := vm.baremetalClient.TaskJsonOutput(task_id, "task")
 		if err != nil {
 			return 0, bosherr.WrapErrorf(err, "Failed to get state with task_id: %d", task_id)
@@ -697,8 +697,8 @@ func (vm *softLayerHardware) provisionBaremetal(server_id string, stemcell strin
 			info = serverOutput.Data["info"].(map[string]interface{})
 			return int(info["id"].(float64)), nil
 		default:
-			totalTime += slh.POLLING_INTERVAL
-			time.Sleep(slh.POLLING_INTERVAL)
+			totalTime += api.POLLING_INTERVAL
+			time.Sleep(api.POLLING_INTERVAL)
 		}
 	}
 
