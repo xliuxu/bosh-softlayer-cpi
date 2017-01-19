@@ -169,6 +169,7 @@ func (c *softLayerVirtualGuestCreator) createByOSReload(agentID string, stemcell
 			if err != nil || virtualGuest.Id == 0 {
 				return nil, bosherr.WrapErrorf(err, "Could not find VirtualGuest by ip address: %s", network.IP)
 			}
+			break
 		case "manual", "":
 			continue
 		default:
