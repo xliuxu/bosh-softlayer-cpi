@@ -207,6 +207,7 @@ func (s *sshClientWrapper) Output(command string) ([]byte, error) {
 }
 
 func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
+	vm.logger.Info(SOFTLAYER_VM_LOG_TAG, "Configuring networks: %#v", networks)
 	ubuntu := Ubuntu{
 		SSHClient: &sshClientWrapper{
 			client:   vm.sshClient,
@@ -238,20 +239,28 @@ func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
 		return bosherr.WrapError(err, "Normalizing Network Definitions")
 	}
 
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Normalized networks: %#v", networks)
+
 	componentByNetwork, err := ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
 	if err != nil {
 		return bosherr.WrapError(err, "Mapping Network Component and name")
 	}
+
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
 
 	networks, err = ubuntu.NormalizeDynamics(vm.virtualGuest, networks)
 	if err != nil {
 		return bosherr.WrapError(err, "Normalizing Dynamic Networks Definitions")
 	}
 
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Normalized Dynamics: %#v", networks)
+
 	componentByNetwork, err = ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
 	if err != nil {
 		return bosherr.WrapError(err, "Mapping Network Component and name")
 	}
+
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
 
 	interfaces := []Interface{}
 	for networkName, nw := range networks {
@@ -290,6 +299,8 @@ func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
 
 		interfaces = append(interfaces, intf)
 	}
+
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Interfaces: %#v", interfaces)
 
 	return ubuntu.ConfigureNetwork(interfaces, vm.GetRootPassword(), vm.GetPrimaryBackendIP())
 }
