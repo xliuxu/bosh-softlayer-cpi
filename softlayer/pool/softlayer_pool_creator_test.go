@@ -101,14 +101,6 @@ var _ = Describe("SoftlayerPoolCreator", func() {
 				DedicatedAccountHostOnlyFlag: true,
 				PrivateNetworkOnlyFlag:       false,
 				SshKeys:                      []sldatatypes.SshKey{{Id: 74826}},
-				BlockDevices: []sldatatypes.BlockDevice{{
-					Device:    "0",
-					DiskImage: sldatatypes.DiskImage{Capacity: 100}}},
-				NetworkComponents: []sldatatypes.NetworkComponents{{MaxSpeed: 1000}},
-				PrimaryNetworkComponent: sldatatypes.PrimaryNetworkComponent{
-					NetworkVlan: sldatatypes.NetworkVlan{Id: 524956}},
-				PrimaryBackendNetworkComponent: sldatatypes.PrimaryBackendNetworkComponent{
-					NetworkVlan: sldatatypes.NetworkVlan{Id: 524956}},
 			}
 
 			networks = map[string]Network{

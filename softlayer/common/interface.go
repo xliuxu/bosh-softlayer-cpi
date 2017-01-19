@@ -29,8 +29,7 @@ type VMCloudProperties struct {
 	Domain                   string                               `json:"domain,omitempty"`
 	StartCpus                int                                  `json:"startCpus,omitempty"`
 	MaxMemory                int                                  `json:"maxMemory,omitempty"`
-	Datacenter               sldatatypes.Datacenter               `json:"datacenter"`
-	BlockDeviceTemplateGroup sldatatypes.BlockDeviceTemplateGroup `json:"blockDeviceTemplateGroup,omitempty"`
+	Datacenter               string		                      `json:"datacenter"`
 	SshKeys                  []sldatatypes.SshKey                 `json:"sshKeys,omitempty"`
 	RootDiskSize             int                                  `json:"rootDiskSize,omitempty"`
 	EphemeralDiskSize        int                                  `json:"ephemeralDiskSize,omitempty"`
@@ -40,7 +39,6 @@ type VMCloudProperties struct {
 	DedicatedAccountHostOnlyFlag   bool                                       `json:"dedicatedAccountHostOnlyFlag,omitempty"`
 	NetworkComponents              []sldatatypes.NetworkComponents            `json:"networkComponents,omitempty"`
 	PrivateNetworkOnlyFlag         bool                                       `json:"privateNetworkOnlyFlag,omitempty"`
-	BlockDevices                   []sldatatypes.BlockDevice                  `json:"blockDevices,omitempty"`
 	UserData                       []sldatatypes.UserData                     `json:"userData,omitempty"`
 	PostInstallScriptUri           string                                     `json:"postInstallScriptUri,omitempty"`
 

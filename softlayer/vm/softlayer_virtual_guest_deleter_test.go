@@ -1,8 +1,8 @@
 package vm_test
 
 import (
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
-	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/vm"
 	testhelpers "github.com/cloudfoundry/bosh-softlayer-cpi/test_helpers"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -23,8 +23,8 @@ var _ = Describe("SoftlayerVirtualGuestDeleter", func() {
 		fakeSoftLayerClient = fakeslclient.NewFakeSoftLayerClient("fake-username", "fake-api-key")
 		logger = boshlog.NewLogger(boshlog.LevelNone)
 		deleter = NewSoftLayerVMDeleter(fakeSoftLayerClient, logger)
-		slh.TIMEOUT = 2 * time.Second
-		slh.POLLING_INTERVAL = 1 * time.Second
+		api.TIMEOUT = 2 * time.Second
+		api.POLLING_INTERVAL = 1 * time.Second
 	})
 
 	Describe("Delete", func() {

@@ -11,6 +11,8 @@ import (
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common"
 	. "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/vm"
 
+	"github.com/cloudfoundry/bosh-softlayer-cpi/api"
+
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 
 	testhelpers "github.com/cloudfoundry/bosh-softlayer-cpi/test_helpers"
@@ -23,7 +25,6 @@ import (
 	fakesutil "github.com/cloudfoundry/bosh-softlayer-cpi/util/fakes"
 	fakeslclient "github.com/maximilien/softlayer-go/client/fakes"
 
-	slh "github.com/cloudfoundry/bosh-softlayer-cpi/softlayer/common/helper"
 	datatypes "github.com/maximilien/softlayer-go/data_types"
 )
 
@@ -273,8 +274,8 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 			sshClient.ExecCommandStub = func(_, _, _, _ string) (string, error) {
 				return expectedCmdResults[sshClient.ExecCommandCallCount()-1], nil
 			}
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.AttachDisk(disk)
 			Expect(err).ToNot(HaveOccurred())
@@ -294,8 +295,8 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 			sshClient.ExecCommandStub = func(_, _, _, _ string) (string, error) {
 				return expectedCmdResults[sshClient.ExecCommandCallCount()-1], nil
 			}
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.AttachDisk(disk)
 			Expect(err).ToNot(HaveOccurred())
@@ -316,8 +317,8 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 			sshClient.ExecCommandStub = func(_, _, _, _ string) (string, error) {
 				return expectedCmdResults[sshClient.ExecCommandCallCount()-1], nil
 			}
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.AttachDisk(disk)
 			Expect(err).ToNot(HaveOccurred())
@@ -326,8 +327,8 @@ var _ = Describe("SoftLayerVirtualGuest", func() {
 		It("reports error when failed to attach the iSCSI volume", func() {
 
 			sshClient.ExecCommandReturns("fake-result", errors.New("fake-error"))
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.AttachDisk(disk)
 			Expect(err).To(HaveOccurred())
@@ -398,8 +399,8 @@ iscsiadm: No records found
 			sshClient.ExecCommandStub = func(_, _, _, _ string) (string, error) {
 				return expectedCmdResults[sshClient.ExecCommandCallCount()-1], nil
 			}
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.DetachDisk(disk)
 			Expect(err).ToNot(HaveOccurred())
@@ -419,8 +420,8 @@ iscsiadm: No records found
 			sshClient.ExecCommandStub = func(_, _, _, _ string) (string, error) {
 				return expectedCmdResults[sshClient.ExecCommandCallCount()-1], nil
 			}
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.DetachDisk(disk)
 			Expect(err).ToNot(HaveOccurred())
@@ -428,8 +429,8 @@ iscsiadm: No records found
 
 		It("reports error when failed to detach iSCSI volume", func() {
 			sshClient.ExecCommandReturns("fake-result", errors.New("fake-error"))
-			slh.TIMEOUT = 2 * time.Second
-			slh.POLLING_INTERVAL = 1 * time.Second
+			api.TIMEOUT = 2 * time.Second
+			api.POLLING_INTERVAL = 1 * time.Second
 
 			err := vm.DetachDisk(disk)
 			Expect(err).To(HaveOccurred())

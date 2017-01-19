@@ -59,7 +59,7 @@ func CreateVirtualGuestTemplate(stemcellUuid string, cloudProps VMCloudPropertie
 		MaxMemory: cloudProps.MaxMemory,
 
 		Datacenter: sldatatypes.Datacenter{
-			Name: cloudProps.Datacenter.Name,
+			Name: cloudProps.Datacenter,
 		},
 
 		BlockDeviceTemplateGroup: &sldatatypes.BlockDeviceTemplateGroup{
@@ -72,7 +72,6 @@ func CreateVirtualGuestTemplate(stemcellUuid string, cloudProps VMCloudPropertie
 		LocalDiskFlag:     cloudProps.LocalDiskFlag,
 
 		DedicatedAccountHostOnlyFlag:   cloudProps.DedicatedAccountHostOnlyFlag,
-		BlockDevices:                   cloudProps.BlockDevices,
 		NetworkComponents:              cloudProps.NetworkComponents,
 		PrivateNetworkOnlyFlag:         publicNetworkComponent == nil,
 		PrimaryNetworkComponent:        publicNetworkComponent,
