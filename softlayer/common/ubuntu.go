@@ -218,10 +218,10 @@ func (u *Ubuntu) ConfigureNetwork(interfaces Interfaces, rootPassword string, pr
 		return err
 	}
 
-	_, err = u.SSHClient.Output("bash -c 'ifdown -a && mv /etc/network/interfaces.bosh /etc/network/interfaces && ifup -a'")
-	if err != nil {
-		return fmt.Errorf("nework configuration reload failed: %s", err)
-	}
+	//_, err = u.SSHClient.Output("bash -c 'ifdown -a && mv /etc/network/interfaces.bosh /etc/network/interfaces && ifup -a'")
+	//if err != nil {
+	//	return fmt.Errorf("nework configuration reload failed: %s", err)
+	//}
 
 	return nil
 }
