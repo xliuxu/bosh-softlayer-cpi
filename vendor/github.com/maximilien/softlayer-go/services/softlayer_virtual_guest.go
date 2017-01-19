@@ -153,8 +153,14 @@ func (slvgs *softLayer_Virtual_Guest_Service) GetObject(instanceId int) (datatyp
 		"blockDeviceTemplateGroup.globalIdentifier",
 		"primaryNetworkComponent.networkVlan.id",
 		"primaryNetworkComponent.networkVlan.subnets",
+		"primaryNetworkComponent.primaryIpAddress",
+		"primaryNetworkComponent.port",
+		"primaryNetworkComponent.name",
 		"primaryBackendNetworkComponent.networkVlan.id",
 		"primaryBackendNetworkComponent.networkVlan.subnets",
+		"primaryBackendNetworkComponent.primaryIpAddress",
+		"primaryBackendNetworkComponent.port",
+		"primaryBackendNetworkComponent.name",
 	}
 
 	response, errorCode, err := slvgs.client.GetHttpClient().DoRawHttpRequestWithObjectMask(fmt.Sprintf("%s/%d/getObject.json", slvgs.GetName(), instanceId), objectMask, "GET", new(bytes.Buffer))
