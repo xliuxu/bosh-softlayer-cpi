@@ -169,43 +169,43 @@
 		{
 			"checksumSHA1": "NjBVJwbYlZW0Q54yBHhHcLxfpDg=",
 			"path": "github.com/maximilien/softlayer-go/client",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "MLINP/4ftv+/byowTNRvgeYomOU=",
 			"path": "github.com/maximilien/softlayer-go/client/fakes",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "nPaYMMjIl21a30j9R2lURjb8Nts=",
 			"path": "github.com/maximilien/softlayer-go/common",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "vSKAlOCc+fF+t9S9anWa2i0uIjk=",
 			"path": "github.com/maximilien/softlayer-go/data_types",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
-			"checksumSHA1": "QKTgjsisH9dtExfOoTCtwVk2kXY=",
+			"checksumSHA1": "4pEUIHWjyUjNvTdcxdYpp0LM1uM=",
 			"path": "github.com/maximilien/softlayer-go/services",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "rAdirobiTWcBwIYxYgySqeqhTSM=",
 			"path": "github.com/maximilien/softlayer-go/softlayer",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "TIdT4Jg+JvArPSxEA9nvYqeciDo=",
 			"path": "github.com/maximilien/softlayer-go/test_helpers",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
@@ -333,14 +333,14 @@
 			"checksumSHA1": "DQJ3llWDuIWg2rwgxOCMO3d+Dic=",
 			"origin": "github.com/maximilien/softlayer-go/vendor/github.com/onsi/gomega/gbytes",
 			"path": "github.com/onsi/gomega/gbytes",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{
 			"checksumSHA1": "Al/kfmShH82O7ioUuXNaCN0N+VM=",
 			"origin": "github.com/maximilien/softlayer-go/vendor/github.com/onsi/gomega/gexec",
 			"path": "github.com/onsi/gomega/gexec",
-			"revision": "9ec80c0917a3880a3da531802028f8b24a94b6e6",
+			"revision": "11e2d3fb692c39bff47e6df63afd9d470cef50bd",
 			"revisionTime": "2017-01-18T04:26:00Z"
 		},
 		{

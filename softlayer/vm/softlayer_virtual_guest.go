@@ -194,115 +194,65 @@ func (vm *softLayerVirtualGuest) ConfigureNetworksSettings(networks Networks) er
 	return nil
 }
 
-type sshClientWrapper struct {
-	client   util.SshClient
-	ip       string
-	user     string
-	password string
-}
-
-func (s *sshClientWrapper) Output(command string) ([]byte, error) {
-	o, err := s.client.ExecCommand(s.user, s.password, s.ip, command)
-	return []byte(o), err
-}
-
-func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) error {
+func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) (Networks, error) {
 	vm.logger.Info(SOFTLAYER_VM_LOG_TAG, "Configuring networks: %#v", networks)
-	ubuntu := Ubuntu{
-		SSHClient: &sshClientWrapper{
-			client:   vm.sshClient,
-			ip:       vm.GetPrimaryBackendIP(),
-			user:     ROOT_USER_NAME,
-			password: vm.GetRootPassword(),
-		},
-		SoftLayerFileService: NewSoftlayerFileService(util.GetSshClient(), vm.logger),
+	ubuntu := Softlayer_Ubuntu_Net{
 		LinkNamer:            NewIndexedNamer(networks),
 	}
 
-	//dynamic, manual, err := categorizeNetworks(networks)
-	//if err != nil {
-	//	return nil, bosherr.WrapError(err, "Categorizing Networks")
-	//}
-	//
-	//dynamicInterfaces, err := ubuntu.DynamicInterfaces(vm.virtualGuest.NetworkComponents, dynamic)
-	//if err != nil {
-	//	return nil, bosherr.WrapError(err, "Getting Dynamic Interfaces")
-	//}
-	//
-	//manualInterfaces, err := ubuntu.ManualInterfaces(vm.virtualGuest.NetworkComponents, manual)
-	//if err != nil {
-	//	return nil, bosherr.WrapError(err, "Getting Manual Interfaces")
-	//}
-
-	networks, err := ubuntu.NormalizeNetworkDefinitions(vm.virtualGuest, networks)
-	if err != nil {
-		return bosherr.WrapError(err, "Normalizing Network Definitions")
-	}
-
-	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Normalized networks: %#v", networks)
-
 	componentByNetwork, err := ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
 	if err != nil {
-		return bosherr.WrapError(err, "Mapping Network Component and name")
+		return networks, bosherr.WrapError(err, "Mapping Network Component and name")
 	}
-
 	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
+
+	networks, err = ubuntu.NormalizeNetworkDefinitions(vm.virtualGuest, networks, componentByNetwork)
+	if err != nil {
+		return networks, bosherr.WrapError(err, "Normalizing Network Definitions")
+	}
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Normalized networks: %#v", networks)
 
 	networks, err = ubuntu.NormalizeDynamics(vm.virtualGuest, networks)
 	if err != nil {
-		return bosherr.WrapError(err, "Normalizing Dynamic Networks Definitions")
+		return networks, bosherr.WrapError(err, "Normalizing Dynamic Networks Definitions")
 	}
-
 	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Normalized Dynamics: %#v", networks)
 
 	componentByNetwork, err = ubuntu.ComponentByNetworkName(vm.virtualGuest, networks)
 	if err != nil {
-		return bosherr.WrapError(err, "Mapping Network Component and name")
+		return networks, bosherr.WrapError(err, "Mapping Network Component and name")
 	}
-
 	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
 
-	interfaces := []Interface{}
 	for networkName, nw := range networks {
 		component, ok := componentByNetwork[networkName]
 		if !ok {
-			return bosherr.Errorf("network not found: %q", networkName)
+			return networks, bosherr.Errorf("network not found: %q", networkName)
 		}
 
 		subnet, err := component.NetworkVlan.Subnets.Containing(nw.IP)
 		if err != nil {
-			return bosherr.WrapErrorf(err, "Determining IP `%s`", nw.IP)
+			return networks, bosherr.WrapErrorf(err, "Determining IP `%s`", nw.IP)
 		}
 
 		linkName := fmt.Sprintf("%s%d", component.Name, component.Port)
 		if nw.Type != "dynamic" {
 			linkName, err = ubuntu.LinkNamer.Name(linkName, networkName)
 			if err != nil {
-				return bosherr.WrapErrorf(err, "Linking network with name `%s`", networkName)
+				return networks, bosherr.WrapErrorf(err, "Linking network with name `%s`", networkName)
 			}
 		}
 
-		intf := Interface{
-			Name:                linkName,
-			Auto:                true,
-			AllowHotplug:        true,
-			SourcePolicyRouting: nw.SourcePolicyRouting(),
-			Address:             nw.IP,
-			Netmask:             subnet.Netmask,
-			Gateway:             subnet.Gateway,
-			DefaultGateway:      nw.HasDefaultGateway(),
-		}
+		nw.LinkName = linkName
+		nw.Netmask = subnet.Netmask
+		nw.Gateway = subnet.Gateway
 
 		if component.NetworkVlan.Id == vm.virtualGuest.PrimaryBackendNetworkComponent.NetworkVlan.Id {
-			intf.Routes = SoftlayerPrivateRoutes(subnet.Gateway)
+			nw.Routes = SoftlayerPrivateRoutes(subnet.Gateway)
 		}
-
-		interfaces = append(interfaces, intf)
 	}
 
-	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Interfaces: %#v", interfaces)
-
-	return ubuntu.ConfigureNetwork(interfaces, vm.GetRootPassword(), vm.GetPrimaryBackendIP())
+	return networks, nil
 }
 
 func (vm *softLayerVirtualGuest) AttachDisk(disk bslcdisk.Disk) error {

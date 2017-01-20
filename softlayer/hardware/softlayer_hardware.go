@@ -159,8 +159,8 @@ func (vm *softLayerHardware) ConfigureNetworksSettings(networks Networks) error 
 	return nil
 }
 
-func (vm *softLayerHardware) ConfigureNetworks(networks Networks) error {
-	return api.NotSupportedError{}
+func (vm *softLayerHardware) ConfigureNetworks(networks Networks) (Networks, error) {
+	return nil, api.NotSupportedError{}
 }
 
 func (vm *softLayerHardware) AttachDisk(disk bslcdisk.Disk) error {

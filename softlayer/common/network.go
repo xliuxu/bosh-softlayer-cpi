@@ -21,6 +21,9 @@ type Network struct {
 
 	MAC string `json:"mac,omitempty"`
 
+	LinkName string `json:"link_name`
+	Routes   []Route
+
 	CloudProperties NetworkCloudProperties `json:"cloud_properties,omitempty"`
 }
 

@@ -18,7 +18,7 @@ var _ = Describe("UbuntuNetwork", func() {
 		sshClient            *fakescommon.FakeSSHClient
 		softlayerFileService *fakescommon.FakeSLFileService
 
-		ubuntu *Ubuntu
+		ubuntu *Softlayer_Ubuntu_Net
 	)
 
 	BeforeEach(func() {
@@ -49,7 +49,7 @@ var _ = Describe("UbuntuNetwork", func() {
 		sshClient = &fakescommon.FakeSSHClient{}
 		softlayerFileService = &fakescommon.FakeSLFileService{}
 
-		ubuntu = &Ubuntu{
+		ubuntu = &Softlayer_Ubuntu_Net{
 			SoftLayerClient:      softlayerClient,
 			SSHClient:            sshClient,
 			SoftLayerFileService: softlayerFileService,
