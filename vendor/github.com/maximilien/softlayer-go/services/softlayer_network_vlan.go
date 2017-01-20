@@ -27,7 +27,6 @@ func (slhs *softLayer_Network_Vlan_Service) GetName() string {
 }
 
 func (slhs *softLayer_Network_Vlan_Service) GetObject(id int) (datatypes.SoftLayer_Network_Vlan, error) {
-
 	objectMask := []string{
 		"networkSpace",
 	}

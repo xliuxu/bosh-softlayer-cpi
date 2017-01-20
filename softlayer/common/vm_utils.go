@@ -37,17 +37,19 @@ func TimeStampForTime(now time.Time) string {
 }
 
 func CreateVirtualGuestTemplate(stemcellUuid string, cloudProps VMCloudProperties, userData string, publicVlanId int, privateVlanId int) (sldatatypes.SoftLayer_Virtual_Guest_Template, error) {
-	var publicNetworkComponent *sldatatypes.SoftLayer_Virtual_Guest_Network_Component
+	var publicNetworkComponent *sldatatypes.PrimaryNetworkComponent
+	var privateNetworkComponent *sldatatypes.PrimaryBackendNetworkComponent
+
 	if publicVlanId != 0 {
-		publicNetworkComponent = &sldatatypes.SoftLayer_Virtual_Guest_Network_Component{
-			NetworkVlan: sldatatypes.SoftLayer_Network_Vlan{
+		publicNetworkComponent = &sldatatypes.PrimaryNetworkComponent{
+			NetworkVlan: sldatatypes.NetworkVlan{
 				Id: publicVlanId,
 			},
 		}
 	}
 
-	privateNetworkComponent := &sldatatypes.SoftLayer_Virtual_Guest_Network_Component{
-		NetworkVlan: sldatatypes.SoftLayer_Network_Vlan{
+	privateNetworkComponent = &sldatatypes.PrimaryBackendNetworkComponent{
+		NetworkVlan: sldatatypes.NetworkVlan{
 			Id: privateVlanId,
 		},
 	}

@@ -78,12 +78,12 @@ type SoftLayer_Virtual_Guest_Template struct {
 	BlockDeviceTemplateGroup     *BlockDeviceTemplateGroup `json:"blockDeviceTemplateGroup,omitempty"`
 
 	//Optional
-	DedicatedAccountHostOnlyFlag   bool                                       `json:"dedicatedAccountHostOnlyFlag,omitempty"`
-	NetworkComponents              []NetworkComponents                        `json:"networkComponents,omitempty"`
-	PrivateNetworkOnlyFlag         bool                                       `json:"privateNetworkOnlyFlag,omitempty"`
-	PrimaryNetworkComponent        *SoftLayer_Virtual_Guest_Network_Component `json:"primaryNetworkComponent,omitempty"`
-	PrimaryBackendNetworkComponent *SoftLayer_Virtual_Guest_Network_Component `json:"primaryBackendNetworkComponent,omitempty"`
-	PostInstallScriptUri           string                                     `json:"postInstallScriptUri,omitempty"`
+	DedicatedAccountHostOnlyFlag   bool                            `json:"dedicatedAccountHostOnlyFlag,omitempty"`
+	NetworkComponents              []NetworkComponents             `json:"networkComponents,omitempty"`
+	PrivateNetworkOnlyFlag         bool                            `json:"privateNetworkOnlyFlag,omitempty"`
+	PrimaryNetworkComponent        *PrimaryNetworkComponent        `json:"primaryNetworkComponent,omitempty"`
+	PrimaryBackendNetworkComponent *PrimaryBackendNetworkComponent `json:"primaryBackendNetworkComponent,omitempty"`
+	PostInstallScriptUri           string                          `json:"postInstallScriptUri,omitempty"`
 
 	BlockDevices []BlockDevice `json:"blockDevices,omitempty"`
 	UserData     []UserData    `json:"userData,omitempty"`
@@ -93,6 +93,21 @@ type SoftLayer_Virtual_Guest_Template struct {
 type Datacenter struct {
 	//Required
 	Name string `json:"name"`
+}
+
+type NetworkVlan struct {
+	//Required
+	Id int `json:"id,omitempty"`
+}
+
+type PrimaryNetworkComponent struct {
+	//Required
+	NetworkVlan NetworkVlan `json:"networkVlan,omitempty"`
+}
+
+type PrimaryBackendNetworkComponent struct {
+	//Required
+	NetworkVlan NetworkVlan `json:"networkVlan,omitempty"`
 }
 
 type BlockDeviceTemplateGroup struct {
