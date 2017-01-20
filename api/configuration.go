@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	TIMEOUT             time.Duration
-	POLLING_INTERVAL    time.Duration
+	TIMEOUT             time.Duration = 240 * time.Minute
+	POLLING_INTERVAL    time.Duration =  5 * time.Second
 	LocalDiskFlagNotSet bool
 	LengthOfHostName    int
 )

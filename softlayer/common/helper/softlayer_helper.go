@@ -128,7 +128,6 @@ func WaitForVirtualGuestToHaveRunningTransaction(softLayerClient sl.Client, virt
 }
 
 func WaitForVirtualGuestToHaveNoRunningTransaction(softLayerClient sl.Client, virtualGuestId int, logger boshlog.Logger) error {
-
 	virtualGuestService, err := softLayerClient.GetSoftLayer_Virtual_Guest_Service()
 	if err != nil {
 		return bosherr.WrapError(err, "Creating VirtualGuestService from SoftLayer client")
