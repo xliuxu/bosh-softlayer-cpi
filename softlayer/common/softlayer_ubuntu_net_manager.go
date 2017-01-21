@@ -11,9 +11,9 @@ import (
 )
 
 type Route struct {
-	Network string
-	Netmask string
-	Gateway string
+	Network string `json:"network,omitempty"`
+	Netmask string `json:"netmask,omitempty"`
+	Gateway string `json:"gateway,omitempty"`
 }
 
 func SoftlayerPrivateRoutes(gateway string) []Route {

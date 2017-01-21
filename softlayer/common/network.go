@@ -4,7 +4,7 @@ type Networks map[string]Network
 
 type NetworkCloudProperties struct {
 	VlanID              int  `json:"vlan_id"`
-	SourcePolicyRouting bool `json:"source_policy_routing"`
+	SourcePolicyRouting bool `json:"source_policy_routing,omitempty"`
 }
 
 type Network struct {
@@ -21,8 +21,8 @@ type Network struct {
 
 	MAC string `json:"mac,omitempty"`
 
-	LinkName string `json:"link_name`
-	Routes   []Route
+	LinkName string `json:"link_name,omitempty"`
+	Routes   []Route `json:"routes,omitempty"`
 
 	CloudProperties NetworkCloudProperties `json:"cloud_properties,omitempty"`
 }
