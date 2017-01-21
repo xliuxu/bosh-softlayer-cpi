@@ -41,9 +41,6 @@ type softLayerVirtualGuest struct {
 }
 
 func NewSoftLayerVirtualGuest(virtualGuest datatypes.SoftLayer_Virtual_Guest, softLayerClient sl.Client, sshClient util.SshClient, logger boshlog.Logger) VM {
-	api.TIMEOUT = 60 * time.Minute
-	api.POLLING_INTERVAL = 10 * time.Second
-
 	return &softLayerVirtualGuest{
 		id: virtualGuest.Id,
 

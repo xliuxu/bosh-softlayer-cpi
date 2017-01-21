@@ -24,9 +24,6 @@ type baremetalCreator struct {
 }
 
 func NewBaremetalCreator(vmFinder VMFinder, softLayerClient sl.Client, bmsClient bmslc.BmpClient, agentOptions AgentOptions, logger boshlog.Logger) VMCreator {
-	api.TIMEOUT = 15 * time.Minute
-	api.POLLING_INTERVAL = 5 * time.Second
-
 	return &baremetalCreator{
 		vmFinder:        vmFinder,
 		softLayerClient: softLayerClient,
@@ -37,6 +34,9 @@ func NewBaremetalCreator(vmFinder VMFinder, softLayerClient sl.Client, bmsClient
 }
 
 func (c *baremetalCreator) Create(agentID string, stemcell bslcstem.Stemcell, cloudProps VMCloudProperties, networks Networks, env Environment) (VM, error) {
+	api.TIMEOUT = 15 * time.Minute
+	api.POLLING_INTERVAL = 5 * time.Second
+
 	for _, network := range networks {
 		switch network.Type {
 		case "dynamic":

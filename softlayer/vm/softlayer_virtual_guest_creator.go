@@ -29,9 +29,6 @@ type softLayerVirtualGuestCreator struct {
 }
 
 func NewSoftLayerCreator(vmFinder VMFinder, softLayerClient sl.Client, agentOptions AgentOptions, featureOptions FeatureOptions, registryOptions RegistryOptions, logger boshlog.Logger) VMCreator {
-	api.TIMEOUT = 120 * time.Minute
-	api.POLLING_INTERVAL = 5 * time.Second
-
 	return &softLayerVirtualGuestCreator{
 		vmFinder:        vmFinder,
 		softLayerClient: softLayerClient,
@@ -43,6 +40,9 @@ func NewSoftLayerCreator(vmFinder VMFinder, softLayerClient sl.Client, agentOpti
 }
 
 func (c *softLayerVirtualGuestCreator) Create(agentID string, stemcell bslcstem.Stemcell, cloudProps VMCloudProperties, networks Networks, env Environment) (VM, error) {
+	api.TIMEOUT = 240 * time.Minute
+	api.POLLING_INTERVAL = 5 * time.Second
+
 	for _, network := range networks {
 		switch network.Type {
 		case "dynamic":
