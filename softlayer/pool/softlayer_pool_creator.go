@@ -57,7 +57,7 @@ func (c *softLayerPoolCreator) Create(agentID string, stemcell bslcstem.Stemcell
 
 	for _, network := range networks {
 		switch network.Type {
-		case "dynamic", "portable", "static":
+		case "dynamic":
 			if len(network.IP) == 0 {
 				return c.createFromVMPool(agentID, stemcell, cloudProps, networks, env)
 			} else {

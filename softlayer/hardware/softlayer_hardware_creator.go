@@ -39,7 +39,7 @@ func (c *baremetalCreator) Create(agentID string, stemcell bslcstem.Stemcell, cl
 
 	for _, network := range networks {
 		switch network.Type {
-		case "dynamic", "portable", "static":
+		case "dynamic":
 			if len(network.IP) == 0 {
 				return c.createByBaremetal(agentID, stemcell, cloudProps, networks, env)
 			} else {
