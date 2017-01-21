@@ -120,14 +120,14 @@ func (u *Softlayer_Ubuntu_Net) FinalizedNetworkDefinitions(networkComponents dat
 
 		subnet, err := component.NetworkVlan.Subnets.Containing(nw.IP)
 		if err != nil {
-			return networks,fmt.Errorf(err, "Determining IP `%s`", nw.IP)
+			return networks,fmt.Errorf("Determining IP `%s`: `%s`",nw.IP, err.Error())
 		}
 
 		linkName := fmt.Sprintf("%s%d", component.Name, component.Port)
 		if nw.Type != "dynamic" {
 			linkName, err = u.LinkNamer.Name(linkName, name)
 			if err != nil {
-				return networks, fmt.Errorf(err, "Linking network with name `%s`", name)
+				return networks, fmt.Errorf("Linking network with name `%s`: `%s`", name, err.Error())
 			}
 		}
 

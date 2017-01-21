@@ -203,7 +203,7 @@ func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) (Networks,
 	}
 	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
 
-	networks, err = ubuntu.NormalizeNetworkDefinitions(vm.virtualGuest, networks, componentByNetwork)
+	networks, err = ubuntu.NormalizeNetworkDefinitions(networks, componentByNetwork)
 	if err != nil {
 		return networks, bosherr.WrapError(err, "Normalizing Network Definitions")
 	}
