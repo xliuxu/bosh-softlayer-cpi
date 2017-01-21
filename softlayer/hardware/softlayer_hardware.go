@@ -42,9 +42,6 @@ type softLayerHardware struct {
 }
 
 func NewSoftLayerHardware(hardware datatypes.SoftLayer_Hardware, softLayerClient sl.Client, baremetalClient bmscl.BmpClient, sshClient util.SshClient, logger boshlog.Logger) VM {
-	api.TIMEOUT = 60 * time.Minute
-	api.POLLING_INTERVAL = 10 * time.Second
-
 	return &softLayerHardware{
 		id: hardware.Id,
 

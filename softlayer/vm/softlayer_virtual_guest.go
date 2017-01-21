@@ -869,21 +869,3 @@ func (vm *softLayerVirtualGuest) searchMounts() ([]Mount, error) {
 
 	return mounts, nil
 }
-
-func categorizeNetworks(networks Networks) (Networks, Networks, error) {
-	dynamic := Networks{}
-	manual := Networks{}
-
-	for name, nw := range networks {
-		switch nw.Type {
-		case "dynamic":
-			dynamic[name] = nw
-		case "manual", "":
-			manual[name] = nw
-		default:
-			return nil, nil, fmt.Errorf("unexpected network type: %s", nw.Type)
-		}
-	}
-
-	return dynamic, manual, nil
-}

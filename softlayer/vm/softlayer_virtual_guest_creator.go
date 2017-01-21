@@ -45,7 +45,7 @@ func (c *softLayerVirtualGuestCreator) Create(agentID string, stemcell bslcstem.
 
 	for _, network := range networks {
 		switch network.Type {
-		case "dynamic":
+		case "dynamic", "portable", "static":
 			if c.featureOptions.DisableOsReload {
 				return c.createBySoftlayer(agentID, stemcell, cloudProps, networks, env)
 			} else {
