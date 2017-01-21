@@ -89,7 +89,7 @@ type Softlayer_Ubuntu_Net struct {
 	LinkNamer            LinkNamer
 }
 
-func (u *Softlayer_Ubuntu_Net) NormalizeNetworkDefinitions(virtualGuest datatypes.SoftLayer_Virtual_Guest, networks Networks, componentByNetwork map[string]datatypes.SoftLayer_Virtual_Guest_Network_Component) (Networks, error) {
+func (u *Softlayer_Ubuntu_Net) NormalizeNetworkDefinitions(networks Networks, componentByNetwork map[string]datatypes.SoftLayer_Virtual_Guest_Network_Component) (Networks, error) {
 	normalized := Networks{}
 
 	for name, nw := range networks {
@@ -108,6 +108,41 @@ func (u *Softlayer_Ubuntu_Net) NormalizeNetworkDefinitions(virtualGuest datatype
 	}
 
 	return normalized, nil
+}
+
+func (u *Softlayer_Ubuntu_Net) FinalizedNetworkDefinitions(networkComponents datatypes.SoftLayer_Virtual_Guest, networks Networks, componentByNetwork map[string]datatypes.SoftLayer_Virtual_Guest_Network_Component) (Networks, error) {
+	finalized := Networks{}
+	for name, nw := range networks {
+		component, ok := componentByNetwork[name]
+		if !ok {
+			return networks, fmt.Errorf("network not found: %q", name)
+		}
+
+		subnet, err := component.NetworkVlan.Subnets.Containing(nw.IP)
+		if err != nil {
+			return networks,fmt.Errorf(err, "Determining IP `%s`", nw.IP)
+		}
+
+		linkName := fmt.Sprintf("%s%d", component.Name, component.Port)
+		if nw.Type != "dynamic" {
+			linkName, err = u.LinkNamer.Name(linkName, name)
+			if err != nil {
+				return networks, fmt.Errorf(err, "Linking network with name `%s`", name)
+			}
+		}
+
+		nw.LinkName = linkName
+		nw.Netmask = subnet.Netmask
+		nw.Gateway = subnet.Gateway
+
+		if component.NetworkVlan.Id == networkComponents.PrimaryBackendNetworkComponent.NetworkVlan.Id {
+			nw.Routes = SoftlayerPrivateRoutes(subnet.Gateway)
+		}
+
+		finalized[name] = nw
+	}
+
+	return finalized, nil
 }
 
 func (u *Softlayer_Ubuntu_Net) NormalizeDynamics(networkComponents datatypes.SoftLayer_Virtual_Guest, networks Networks) (Networks, error) {

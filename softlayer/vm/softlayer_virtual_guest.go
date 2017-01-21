@@ -221,33 +221,11 @@ func (vm *softLayerVirtualGuest) ConfigureNetworks(networks Networks) (Networks,
 	}
 	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "ComponentByNetworkName: %#v", componentByNetwork)
 
-	for networkName, nw := range networks {
-		component, ok := componentByNetwork[networkName]
-		if !ok {
-			return networks, bosherr.Errorf("network not found: %q", networkName)
-		}
-
-		subnet, err := component.NetworkVlan.Subnets.Containing(nw.IP)
-		if err != nil {
-			return networks, bosherr.WrapErrorf(err, "Determining IP `%s`", nw.IP)
-		}
-
-		linkName := fmt.Sprintf("%s%d", component.Name, component.Port)
-		if nw.Type != "dynamic" {
-			linkName, err = ubuntu.LinkNamer.Name(linkName, networkName)
-			if err != nil {
-				return networks, bosherr.WrapErrorf(err, "Linking network with name `%s`", networkName)
-			}
-		}
-
-		nw.LinkName = linkName
-		nw.Netmask = subnet.Netmask
-		nw.Gateway = subnet.Gateway
-
-		if component.NetworkVlan.Id == vm.virtualGuest.PrimaryBackendNetworkComponent.NetworkVlan.Id {
-			nw.Routes = SoftlayerPrivateRoutes(subnet.Gateway)
-		}
+	networks, err = ubuntu.FinalizedNetworkDefinitions(vm.virtualGuest, networks, componentByNetwork)
+	if err != nil {
+		return networks, bosherr.WrapError(err, "Finalizing Networks Definitions")
 	}
+	vm.logger.Debug(SOFTLAYER_VM_LOG_TAG, "Finalized Network definition: %#v", networks)
 
 	return networks, nil
 }
